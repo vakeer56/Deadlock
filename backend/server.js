@@ -1,23 +1,24 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const deadlockAdminRoutes = require("./routes/admin/admin.route");
 
 const app = express();
 
-/* ---------- Middleware ---------- */
+app.use(cors({
+  origin: "*",
+}));
+
 app.use(express.json());
 
-/* ---------- Health Check ---------- */
 app.get("/", (req, res) => {
     res.send("Deadlock backend running");
 });
 
-/* ---------- Routes ---------- */
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
 
-/* ---------- Mongo + Server ---------- */
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -26,7 +27,7 @@ mongoose
   .then(() => {
     console.log("MongoDB connected");
 
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
     });
   })

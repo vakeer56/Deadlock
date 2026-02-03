@@ -10,22 +10,42 @@ Content-Type: application/json
 
 {}
 
-###
-PATCH http://localhost:5000/api/admin/deadlock/match/MATCH_ID/teams
-Content-Type: application/json
-
-{
-    "teamA": "TEAM_A_ID",
-    "teamB": "TEAM_B_ID"
-}
 
 ###
 POST http://localhost:5000/api/admin/deadlock/team
 Content-Type: application/json
 
 {
-  "name": "Team Alpha",
-  "members": ["A", "B", "C"]
+  "name": "Team Beta",
+  "members": ["D", "E", "F"]
+}
+###
+POST http://localhost:5000/api/admin/deadlock/match
+Content-Type: application/json
+
+{}
+
+###
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/teams
+Content-Type: application/json
+
+{
+  "teamA": "698228733adcaf19377c84e3",
+  "teamB": "698228893adcaf19377c84e5"
 }
 
+### 
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/swap
+
+###
+
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/reset
+
+###
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/finish
+Content-Type: application/json
+
+{
+  "winner": "698228733adcaf19377c84e3"
+}
 
