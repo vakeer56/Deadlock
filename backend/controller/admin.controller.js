@@ -1,6 +1,5 @@
-import DeadlockMatch from ("../../models/DeadlockMatch");
-import Team from ("../../models/Team");
-
+const DeadlockMatch = require("../model/deadlock.model");
+const Team = require("../model/team.model");
 
 exports.createMatch = async (req, res) => {
     try {
@@ -66,8 +65,8 @@ exports.updateTeams = async (req, res) => {
 
     // Validate teams exist
 
-    const teamAExists = await Team.findById(teamA);
-    const teamBExists = await Team.findById(teamB);
+    const teamAExists = await Team.findOne({_id: teamA, game: "deadlock"});
+    const teamBExists = await Team.findOne({_id: teamB, game: "deadlock"});
 
     if (!teamAExists || !teamBExists) {
         return res.status(404).json({
@@ -172,5 +171,54 @@ exports.finishMatch = async (req, res) => {
     });
     }
 };
+
+exports.getTeam = async (req, res) => {
+    try {
+        const teams = await Team.find({game: "deadlock"})
+            .select("name members game")
+
+        res.json({
+            success: true,
+            teams
+        });
+        } catch(err) {
+            res.status(500).json({
+                success: false,
+                message: "Failed to fetch deadlock teams",
+                err
+            })
+        };
+    };
+
+exports.createTeam = async (req, res) => {
+    try {
+    const { name, members } = req.body;
+
+    if (!name) {
+        return res.status(400).json({
+        success: false,
+        message: "Team name is required"
+        });
+    }
+
+    const team = await Team.create({
+        name,
+        members: members || [],
+        game: "deadlock"
+    });
+
+    res.status(201).json({
+        success: true,
+        team
+    });
+    } catch (error) {
+    res.status(500).json({
+        success: false,
+        message: "Failed to create team",
+        error: error.message
+    });
+    }
+};
+
 
 

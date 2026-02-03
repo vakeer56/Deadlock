@@ -1,0 +1,31 @@
+GET http://localhost:5000/
+
+### 
+GET http://localhost:5000/api/admin/deadlock/teams
+
+###
+
+POST http://localhost:5000/api/admin/deadlock/match
+Content-Type: application/json
+
+{}
+
+###
+PATCH http://localhost:5000/api/admin/deadlock/match/MATCH_ID/teams
+Content-Type: application/json
+
+{
+    "teamA": "TEAM_A_ID",
+    "teamB": "TEAM_B_ID"
+}
+
+###
+POST http://localhost:5000/api/admin/deadlock/team
+Content-Type: application/json
+
+{
+  "name": "Team Alpha",
+  "members": ["A", "B", "C"]
+}
+
+

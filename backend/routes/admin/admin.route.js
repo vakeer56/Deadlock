@@ -1,27 +1,25 @@
-import express from "express";
+const express = require('express');
 const router = express.Router();
 
-import {
+const {
     createMatch,
+    createTeam,
     resetMatch,
     updateTeams,
     swapTeams,
-    finishMatch
-} from "../../controller/admin.controller.js";
+    finishMatch,
+    getTeam  
+} = require("../../controller/admin.controller.js");
 
 
 router.post("/match", createMatch);
-
-
 router.patch("/match/:id/teams", updateTeams);
-
-
 router.patch("/match/:id/swap", swapTeams);
-
-
 router.patch("/match/:id/reset", resetMatch);
-
-
 router.patch("/match/:id/finish", finishMatch);
 
-export default router;
+router.get("/teams", getTeam);
+
+router.post("/team", createTeam);
+
+module.exports = router;

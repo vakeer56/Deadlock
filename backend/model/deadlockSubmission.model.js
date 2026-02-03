@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const deadlockSubmissionSchema = new mongoose.Schema({
     matchId: {
         type: mongoose.Schema.Types.ObjectId,

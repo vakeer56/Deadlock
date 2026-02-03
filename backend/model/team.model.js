@@ -6,10 +6,6 @@ const teamSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    code: {
-        type: Number,
-        required: true
-    },
     members: {
         type: [String],
         required: true,
@@ -21,6 +17,11 @@ const teamSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    }, 
+    game: {
+        type: String,
+        enum: ['deadlock', 'crack-the-code', 'none'],
+        default: 'none'
     }
 }, {
     timestamps: true
