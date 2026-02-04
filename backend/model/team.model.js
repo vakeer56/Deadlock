@@ -14,22 +14,22 @@ const teamSchema = mongoose.Schema(
         code: {
             type: Number,
             required: true,
-            trim: yes
-        }, 
+            trim: true
+        },
         members: {
             type: [String],
             validate: [arr => arr.length <= 3, 'Max 3 members allowed']
-        }, 
+        },
         isActive: {
             type: Boolean
-        }, 
+        },
         game: {
             type: String,
             required: true,
             enum: ["deadlock", "crack-the-code", "pending"],
             default: "pending"
         }
-        
+
 
 
     }
