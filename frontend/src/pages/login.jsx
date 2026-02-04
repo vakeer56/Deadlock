@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "../style/login.css";
 
 function Deadlock() {
@@ -11,7 +12,7 @@ function Deadlock() {
     setMembers(updated);
   };
 
-  const deployTeam = () => {
+  const deployTeam = async () => {
     if (!teamName || members.some(m => !m)) {
       alert("Please fill all fields");
       return;
@@ -22,8 +23,27 @@ function Deadlock() {
       members: members
     };
 
-    console.log("Send to backend:", teamData);
-
+    try {
+      const response = await axios.post("http://localhost:5000/api/admin/deadlock/team", teamData);
+      
+      if (response.data.success) {
+        alert("Team Deployed Successfully!");
+        // You can add redirection logic here if needed
+        console.log("Team created:", response.data.team);
+      }
+    } catch (error) {
+      console.error("Error deploying team:", error);
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        alert(error.response.data.message || "Failed to deploy team");
+      } else if (error.request) {
+        // Request was made but no response received
+        alert("Cannot connect to server. Please ensure the backend is running.");
+      } else {
+        // Something else happened
+        alert("An error occurred while deploying the team.");
+      }
+    }
   };
 
   return (

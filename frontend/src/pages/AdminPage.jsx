@@ -91,34 +91,6 @@ const AdminPage = () => {
         setSourceColumn(null);
     };
 
-    const handleSaveMatch = async () => {
-        if (teamA.length === 0 || teamB.length === 0) {
-            showToast("Assign at least one team to both sides");
-            return;
-        }
-
-        try {
-            let currentMatchId = matchId;
-
-            if (!currentMatchId) {
-                const res = await createMatch();
-                currentMatchId = res.match._id;
-                setMatchId(currentMatchId);
-            }
-
-            // backend currently supports 1v1
-            await updateMatchTeams(
-                currentMatchId,
-                teamA[0]._id,
-                teamB[0]._id
-            );
-
-            showToast("Match Saved");
-        } catch (err) {
-            console.error(err);
-            showToast("Save failed");
-        }
-    };
 
     const handleSwap = async () => {
         const temp = teamA;
@@ -149,7 +121,6 @@ const AdminPage = () => {
             <header className="admin-header">
                 <h1>DEADLOCK ADMIN</h1>
                 <div className="admin-actions">
-                    <button onClick={handleSaveMatch}>SAVE MATCH</button>
                     <button onClick={handleSwap}>SWAP</button>
                     <button onClick={handleClearBoard} style={{ color: 'red' }}>
                         CLEAR BOARD
