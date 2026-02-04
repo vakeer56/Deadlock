@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminPage from './pages/AdminPage';
+import CTCLobby from "./pages/ctcLobby";
+import DLLobby from "./pages/dlLobby";
 import Deadlock from "./pages/login";
-import './App.css';
 
 function App() {
   return (
@@ -9,6 +10,8 @@ function App() {
       <Routes>
         <Route path="/" element={<AdminPage />} />
         <Route path="/login" element={<Deadlock />} />
+        <Route path="/dashboard" element={<CTCLobby />} />
+        <Route path="/deadlock-lobby" element={<DLLobby />} />
       </Routes>
     </Router>
   );

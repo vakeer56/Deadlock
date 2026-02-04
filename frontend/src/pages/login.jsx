@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../style/login.css";
 
 function Deadlock() {
+  const navigate = useNavigate();
   const [teamName, setTeamName] = useState("");
   const [members, setMembers] = useState(["", "", ""]);
 
@@ -27,9 +29,8 @@ function Deadlock() {
       const response = await axios.post("http://localhost:5000/api/admin/deadlock/team", teamData);
       
       if (response.data.success) {
-        alert("Team Deployed Successfully!");
-        // You can add redirection logic here if needed
-        console.log("Team created:", response.data.team);
+        // Redirect to dashboard on success
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Error deploying team:", error);
