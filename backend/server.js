@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+const crackCodeRoutes = require("./routes/admin/crackCode.route");
 const deadlockAdminRoutes = require("./routes/admin/admin.route");
 
 const app = express();
@@ -18,6 +18,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
+app.use("/api/admin/crack-code", crackCodeRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;

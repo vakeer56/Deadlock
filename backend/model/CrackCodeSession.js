@@ -6,10 +6,6 @@ const crackCodeSessionSchema = new mongoose.Schema({
         ref: "Team",
         required: true,
     },
-    gameSessionId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-    },
     attemptsUsed: {
         type: Number,
         default: 0,
@@ -22,7 +18,10 @@ const crackCodeSessionSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    endedAt: Date,
+    endedAt: {
+        type: Date,
+        default: null,
+    },
 });
 
 module.exports = mongoose.model(
