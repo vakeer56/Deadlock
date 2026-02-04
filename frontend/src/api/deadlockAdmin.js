@@ -75,4 +75,14 @@ export const finishMatch = async (matchId, winnerId) => {
     }
 };
 
+export const startAllMatches = async () => {
+    try {
+        const response = await api.post('/deadlock/start-all');
+        return response.data;
+    } catch (error) {
+        console.error("Error starting all matches:", error);
+        throw error;
+    }
+};
+
 export default api;

@@ -3,7 +3,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+//--------------------------------Import Routes--------------------------------
 const deadlockAdminRoutes = require("./routes/admin/admin.route");
+
 
 const app = express();
 
@@ -17,6 +19,7 @@ app.get("/", (req, res) => {
     res.send("Deadlock backend running");
 });
 
+// --------------------------------Routes--------------------------------
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
 
 const PORT = process.env.PORT || 5000;

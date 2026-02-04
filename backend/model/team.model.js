@@ -18,11 +18,17 @@ const teamSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     }, 
-    game: {
+    currentRound: {
         type: String,
-        enum: ['deadlock', 'crack-the-code', 'none'],
-        default: 'none'
+        enum: ['deadlock', 'crack-the-code', 'eliminated'],
+        default: 'deadlock'
+    },
+    deadlockResult: {
+        type: String,
+        enum: ['pending', 'win', 'lose'],
+        default: 'pending'
     }
+
 }, {
     timestamps: true
 });

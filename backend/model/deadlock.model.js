@@ -28,7 +28,13 @@ const deadlockMatchSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team',
         default: null
-    }
+    },
+    loser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    default: null
+}
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('DeadlockMatch', deadlockMatchSchema);
