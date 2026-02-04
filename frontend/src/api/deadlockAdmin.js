@@ -1,22 +1,78 @@
-// src/api/deadlock.js
-import axios from "axios";
+import axios from 'axios';
 
-const API = axios.create({ 
-    baseURL: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5000/api/admin/deadlock`
+// Use environment variable if set, otherwise fallback to dynamic hostname for LAN support
+const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5000/api/admin/deadlock`;
+
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
-export const createTeam = (data) => API.post("/team", data);
-export const getTeams = () => API.get("/teams");
+export const getTeams = async () => {
+    try {
+        const response = await api.get('/teams');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching teams:", error);
+        throw error;
+    }
+};
 
-export const createMatch = () => API.post("/match");
-export const assignTeams = (id, data) =>
-    API.patch(`/match/${id}/teams`, data);
+export const createMatch = async () => {
+    try {
+        const response = await api.post('/match', {});
+        return response.data;
+    } catch (error) {
+        console.error("Error creating match:", error);
+        throw error;
+    }
+};
 
-export const swapTeams = (id) =>
-    API.patch(`/match/${id}/swap`);
+export const updateMatchTeams = async (matchId, teamAId, teamBId) => {
+    try {
+        const response = await api.patch(`/match/${matchId}/teams`, {
+            teamA: teamAId,
+            teamB: teamBId
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating match teams:", error);
+        throw error;
+    }
+};
 
-export const resetMatch = (id) =>
-    API.patch(`/match/${id}/reset`);
+export const swapMatchTeams = async (matchId) => {
+    try {
+        const response = await api.patch(`/match/${matchId}/swap`);
+        return response.data;
+    } catch (error) {
+        console.error("Error swapping teams:", error);
+        throw error;
+    }
+};
 
-export const finishMatch = (id, data) =>
-    API.patch(`/match/${id}/finish`, data);
+export const resetMatch = async (matchId) => {
+    try {
+        const response = await api.patch(`/match/${matchId}/reset`);
+        return response.data;
+    } catch (error) {
+        console.error("Error resetting match:", error);
+        throw error;
+    }
+};
+
+export const finishMatch = async (matchId, winnerId) => {
+    try {
+        const response = await api.patch(`/match/${matchId}/finish`, {
+            winner: winnerId
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error finishing match:", error);
+        throw error;
+    }
+};
+
+export default api;
