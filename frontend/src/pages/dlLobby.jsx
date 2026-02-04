@@ -32,18 +32,43 @@ const DLLobby = () => {
             width: '100vw',
             backgroundColor: '#050505',
             color: '#ffffff',
-            fontFamily: '"Inter", sans-serif',
+            fontFamily: '"Exo 2", sans-serif',
             display: 'flex',
             flexDirection: 'column',
-            overflowX: 'hidden'
+            overflowX: 'hidden',
+            position: 'relative'
         }}>
+            {/* Ambient Background */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'radial-gradient(circle at 50% 50%, rgba(20, 20, 30, 1) 0%, rgba(5, 5, 5, 1) 100%)',
+                zIndex: 0
+            }}></div>
+
+            {/* Grid Overlay */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
+                backgroundSize: '40px 40px',
+                zIndex: 1,
+                opacity: 0.5
+            }}></div>
+
             {/* Navbar */}
             <header style={{
                 padding: '2rem 4rem',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                borderBottom: '1px solid rgba(255, 215, 0, 0.1)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                 background: 'rgba(5, 5, 5, 0.8)',
                 backdropFilter: 'blur(10px)',
                 position: 'fixed',
@@ -53,23 +78,22 @@ const DLLobby = () => {
             }}>
                 <div style={{ 
                     fontSize: '24px', 
-                    fontFamily: '"Orbitron", sans-serif', 
+                    fontFamily: '"Exo 2", sans-serif', 
                     fontWeight: '700',
-                    color: 'aquamarine', 
+                    color: '#fff', 
                     letterSpacing: '2px',
-                    textShadow: '0 0 20px rgba(255, 215, 0, 0.3)'
+                    textShadow: '0 0 20px rgba(255, 255, 255, 0.3)'
                 }}>
                     TAKSHASHILA 2K26
                 </div>
                 <div style={{ 
-                    fontSize: '24px', 
-                    fontFamily: '"Orbitron", sans-serif', 
+                    fontSize: '16px', 
+                    fontFamily: '"Exo 2", sans-serif', 
                     fontWeight: '700',
-                    color: '#ffd700', 
+                    color: 'rgba(255,255,255,0.6)', 
                     letterSpacing: '2px',
-                   
                 }}>
-                    CELESTIUS
+                    SYSTEM STATUS: ONLINE
                 </div>
             </header>
 
@@ -82,26 +106,15 @@ const DLLobby = () => {
                 justifyContent: 'center',
                 position: 'relative',
                 marginTop: '80px', // Compensate for fixed header
-                padding: '0 20px'
+                padding: '0 20px',
+                zIndex: 10
             }}>
-                {/* Background Ambient Effect */}
-                <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '60vw',
-                    height: '60vw',
-                    background: 'radial-gradient(circle, rgba(255, 215, 0, 0.03) 0%, transparent 70%)',
-                    pointerEvents: 'none',
-                    zIndex: 0
-                }}></div>
 
                 {/* Hero Title */}
                 <h1 style={{
                     fontSize: 'clamp(3rem, 8vw, 8rem)',
-                    fontFamily: '"Orbitron", sans-serif',
-                    fontWeight: '700',
+                    fontFamily: '"Exo 2", sans-serif',
+                    fontWeight: '900',
                     background: 'linear-gradient(180deg, #ffffff 0%, #444444 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -112,15 +125,6 @@ const DLLobby = () => {
                 }}>
                     DEADLOCK
                 </h1>
-
-                <div style={{ 
-                    height: '2px', 
-                    width: '100px', 
-                    background: '#ffd700', 
-                    margin: '0 auto 3rem',
-                    opacity: 0.7,
-                    boxShadow: '0 0 15px rgba(255, 215, 0, 0.5)'
-                }}></div>
 
                 <p style={{
                     fontSize: 'clamp(1rem, 1.5vw, 1.2rem)',
@@ -134,9 +138,9 @@ const DLLobby = () => {
                     The system is waiting for your initialization. 
                     <br />
                     Status: <span style={{ 
-                        color: eventStatus === 'active' ? '#00ff9d' : '#ffd700',
+                        color: eventStatus === 'active' ? '#00ff9d' : '#00ffff',
                         fontWeight: 'bold',
-                        textShadow: eventStatus === 'active' ? '0 0 10px rgba(0,255,157,0.5)' : '0 0 10px rgba(255,215,0,0.3)'
+                        textShadow: eventStatus === 'active' ? '0 0 10px rgba(0,255,157,0.5)' : '0 0 10px rgba(0,255,255,0.3)'
                     }}>{eventStatus.toUpperCase()}</span>
                 </p>
 

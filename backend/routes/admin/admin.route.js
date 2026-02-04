@@ -8,7 +8,8 @@ const {
     updateTeams,
     swapTeams,
     finishMatch,
-    getTeam  
+    finishMatch,
+    getTeam
 } = require("../../controller/admin.controller.js");
 
 
@@ -19,6 +20,7 @@ router.patch("/match/:id/reset", resetMatch);
 router.patch("/match/:id/finish", finishMatch);
 
 router.get("/teams", getTeam);
+
 
 router.post("/team", createTeam);
 

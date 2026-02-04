@@ -1,7 +1,7 @@
 /* ============================
    FONT IMPORTS
 ============================ */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&display=swap");
 
 /* ============================
    RESET
@@ -28,16 +28,19 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;        /* vertical center */
-  justify-content: center;    /* horizontal center */
+  align-items: center;
+  /* vertical center */
+  justify-content: center;
+  /* horizontal center */
   background:
     radial-gradient(circle at top, rgba(255, 215, 0, 0.18), transparent 55%),
     radial-gradient(circle at bottom, rgba(255, 215, 0, 0.1), transparent 60%),
     #050505;
 }
-.deadlock-container{
-    min-width: 100dvw;
-    min-height: 100dvh;
+
+.deadlock-container {
+  min-width: 100dvw;
+  min-height: 100dvh;
 }
 
 /* ============================
@@ -50,12 +53,11 @@ body {
   max-width: 92%;
   padding: 46px 42px;
   border-radius: 26px;
-  margin: 0 auto;            /* HARD CENTER */
-  background: linear-gradient(
-    180deg,
-    rgba(20, 20, 20, 0.95),
-    rgba(10, 10, 10, 0.95)
-  );
+  margin: 0 auto;
+  /* HARD CENTER */
+  background: linear-gradient(180deg,
+      rgba(20, 20, 20, 0.95),
+      rgba(10, 10, 10, 0.95));
   border: 1px solid rgba(255, 215, 0, 0.28);
   box-shadow:
     0 40px 80px rgba(0, 0, 0, 0.85),
@@ -195,6 +197,7 @@ input:focus {
    MOBILE
 ============================ */
 @media (max-width: 600px) {
+
   .card,
   .panel,
   .glass-card {
@@ -206,6 +209,3 @@ input:focus {
     font-size: 40px;
   }
 }
-
-
-

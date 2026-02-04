@@ -142,6 +142,8 @@ const AdminPage = () => {
         showToast("Board cleared");
     };
 
+
+
     return (
         <div className="admin-container">
             {toast && <div className="toast">{toast}</div>}
