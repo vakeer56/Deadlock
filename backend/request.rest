@@ -1,0 +1,51 @@
+GET http://localhost:5000/
+
+### 
+GET http://localhost:5000/api/admin/deadlock/teams
+
+###
+
+POST http://localhost:5000/api/admin/deadlock/match
+Content-Type: application/json
+
+{}
+
+
+###
+POST http://localhost:5000/api/admin/deadlock/team
+Content-Type: application/json
+
+{
+  "name": "Team Delta",
+  "members": ["J", "K", "L"]
+}
+###
+POST http://localhost:5000/api/admin/deadlock/match
+Content-Type: application/json
+
+{}
+
+###
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/teams
+Content-Type: application/json
+
+{
+  "teamA": "698228733adcaf19377c84e3",
+  "teamB": "698228893adcaf19377c84e5"
+}
+
+### 
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/swap
+
+###
+
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/reset
+
+###
+PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/finish
+Content-Type: application/json
+
+{
+  "winner": "698228733adcaf19377c84e3"
+}
+
