@@ -226,9 +226,22 @@ GET DEADLOCK TEAMS (ELIGIBLE ONLY)
 ---------------------------------------------------- */
 exports.getTeam = async (req, res) => {
     try {
+        // 1. Find all active matches to identify busy teams
+        const activeMatches = await DeadlockMatch.find({
+            status: { $in: ["lobby", "ongoing"] }
+        }).select("teamA teamB");
+
+        const busyTeamIds = activeMatches.reduce((acc, match) => {
+            if (match.teamA) acc.push(match.teamA);
+            if (match.teamB) acc.push(match.teamB);
+            return acc;
+        }, []);
+
+        // 2. Fetch teams not in active matches
         const teams = await Team.find({
             currentRound: "deadlock",
-            deadlockResult: "pending"
+            deadlockResult: "pending",
+            _id: { $nin: busyTeamIds }
         }).select("name members currentRound");
 
         res.json({
