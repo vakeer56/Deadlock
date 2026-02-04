@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const Team = require("../../models/Team");
-const CrackCodeSession = require("../../models/CrackCodeSession");
+const Team = require("../../model/team.model");
+const CrackCodeSession = require("../../model/CrackCodeSession");
 
 /*
   POST /admin/crack-code/start
@@ -12,36 +12,26 @@ const CrackCodeSession = require("../../models/CrackCodeSession");
 */
 router.post("/start", async (req, res) => {
   try {
-    const { gameSessionId } = req.body;
-
-    if (!gameSessionId) {
-      return res.status(400).json({
-        message: "gameSessionId is required to start the game",
-      });
-    }
 
     // Fetch all active teams
-    const teams = await Team.find({ isActive: true });
+    const teams = await Team.find({ currentRound: 'crack-the-code' });
 
     if (teams.length === 0) {
       return res.status(400).json({
         message: "No active teams found",
       });
     }
-
+    const alreadyStarted = await CrackCodeSession.findOne();
+    if (alreadyStarted) {
+        return res.status(400).json({
+            message: "Crack the Code game already started",
+        });
+    }
     // Create CrackCodeSession for each team
     for (const team of teams) {
-      // Prevent duplicate session creation
-      const existingSession = await CrackCodeSession.findOne({
-        teamId: team._id,
-        gameSessionId,
-      });
-
-      if (existingSession) continue;
 
       await CrackCodeSession.create({
         teamId: team._id,
-        gameSessionId,
         attemptsUsed: 0,
         maxAttempts: 50,
         startedAt: new Date(),
@@ -55,6 +45,7 @@ router.post("/start", async (req, res) => {
     console.error("CrackCode START error:", error);
     return res.status(500).json({
       message: "Internal server error while starting Crack the Code",
+      error: error.message,
     });
   }
 });

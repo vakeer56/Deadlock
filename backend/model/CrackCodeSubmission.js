@@ -6,9 +6,9 @@ const crackCodeSubmissionSchema = new mongoose.Schema({
         ref: "Team",
         required: true,
     },
-    gameSessionId: {
+    crackCodeSessionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "GameSession",
+        ref: "CrackCodeSession",
         required: true,
     },
     submittedLogic: {
