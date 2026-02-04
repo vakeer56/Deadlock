@@ -16,8 +16,8 @@ POST http://localhost:5000/api/admin/deadlock/team
 Content-Type: application/json
 
 {
-  "name": "Team Beta",
-  "members": ["D", "E", "F"]
+  "name": "Team Delta",
+  "members": ["J", "K", "L"]
 }
 ###
 POST http://localhost:5000/api/admin/deadlock/match
