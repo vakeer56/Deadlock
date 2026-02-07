@@ -25,10 +25,11 @@ function Deadlock() {
 
     try {
       const response = await axios.post("http://localhost:5000/api/admin/deadlock/team", teamData);
-      
+
       if (response.data.success) {
         alert("Team Deployed Successfully!");
-        // You can add redirection logic here if needed
+        // Store teamId for session management
+        localStorage.setItem("teamId", response.data.team._id);
         console.log("Team created:", response.data.team);
       }
     } catch (error) {

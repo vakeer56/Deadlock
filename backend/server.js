@@ -14,11 +14,13 @@ app.use(cors({
 app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.send("Deadlock backend running");
+  res.send("Deadlock backend running");
 });
 
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
 app.use("/api/admin/crack-code", crackCodeRoutes);
+const codeRoutes = require("./routes/public/code.route");
+app.use("/api/public/code", codeRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
