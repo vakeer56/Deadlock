@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import './CrackTheCode.css';
 
@@ -11,22 +11,33 @@ const LANGUAGE_VERSIONS = {
 
 const DEFAULT_CODE = {
     python: `# Write your Python code here
-def solution():
-    print("Hello World")`,
+def decodeLogic(nums, target):
+    print("Processing...")
+    return [0, 1]`,
     cpp: `// Write your C++ code here
 #include <iostream>
+#include <vector>
 using namespace std;
 
-int main() {
-    cout << "Hello World";
-    return 0;
-}`,
+class Solution {
+public:
+    vector<int> decodeLogic(vector<int>& nums, int target) {
+        cout << "Processing..." << endl;
+        return {0, 1};
+    }
+};`,
     javascript: `// Write your JavaScript code here
-console.log("Hello World");`,
+function decodeLogic(nums, target) {
+    console.log("Processing...");
+    return [0, 1];
+}`,
     java: `// Write your Java code here
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello World");
+import java.util.*;
+
+class Solution {
+    public int[] decodeLogic(int[] nums, int target) {
+        System.out.println("Processing...");
+        return new int[]{0, 1};
     }
 }`
 };
@@ -42,6 +53,32 @@ const CrackTheCode = () => {
     const [codeMap, setCodeMap] = useState(DEFAULT_CODE);
     const [activeTestCase, setActiveTestCase] = useState(0);
 
+    // Timer State
+    const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+
+    useEffect(() => {
+        if (timeLeft <= 0) return;
+
+        const timerId = setInterval(() => {
+            setTimeLeft(prevTime => {
+                if (prevTime <= 1) {
+                    clearInterval(timerId);
+                    alert("Time is up!");
+                    return 0;
+                }
+                return prevTime - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timerId);
+    }, [timeLeft]);
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
     const handleLanguageChange = (e) => {
         setLanguage(e.target.value);
     };
@@ -53,9 +90,7 @@ const CrackTheCode = () => {
         }));
     };
 
-    const [consoleOutput, setConsoleOutput] = useState('');
-    const [resultOutput, setResultOutput] = useState('');
-    const [isCorrect, setIsCorrect] = useState(null);
+    const [testResults, setTestResults] = useState({}); // { 0: { log, result, isCorrect }, 1: ... }
     const [isRunning, setIsRunning] = useState(false);
 
     const handleRun = async () => {
@@ -66,72 +101,184 @@ const CrackTheCode = () => {
         }
 
         setIsRunning(true);
-        setConsoleOutput('');
-        setResultOutput('');
-        setIsCorrect(null);
+        setTestResults({});
 
-        try {
-            let info = "";
-            let codeToRun = codeMap[language];
+        const newResults = {};
 
-            if (language === "python") {
-                info = "\nprint(\"---SPLIT---\")\ntry:\n    print(solution())\nexcept Exception as e:\n    print(e)";
-                codeToRun = codeMap[language] + info;
-            } else if (language === "javascript") {
-                info = "\nconsole.log(\"---SPLIT---\");\ntry {\n    console.log(solution());\n} catch (e) {\n    console.log(e);\n}";
-                codeToRun = codeMap[language] + info;
-            }
-            // Add other languages wrapping here if needed
+        // Use standard for loop for sequential execution
+        for (let index = 0; index < TEST_CASES.length; index++) {
+            const testCase = TEST_CASES[index];
+            try {
+                let codeToRun = codeMap[language];
+                let stdinData = "";
 
-            const response = await fetch('http://localhost:5000/api/public/code/execute', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    teamId,
-                    language: language === 'cpp' ? 'c++' : language,
-                    version: LANGUAGE_VERSIONS[language],
-                    files: [
-                        {
-                            content: codeToRun,
-                        }
-                    ],
-                    stdin: TEST_CASES[activeTestCase].input,
-                }),
-            });
+                if (language === "python") {
+                    stdinData = JSON.stringify(testCase.args);
+                    codeToRun = `
+import sys
+import json
+${codeMap[language]}
 
-            const data = await response.json();
-            if (response.ok) {
-                const fullOutput = data.output || data.error || "";
-                const parts = fullOutput.split("---SPLIT---");
+if __name__ == "__main__":
+    try:
+        input_data = sys.stdin.read()
+        if input_data:
+            args = json.loads(input_data)
+            ret = decodeLogic(*args)
+            print("\\n---RESULT---") 
+            print(json.dumps(ret).replace(" ", "")) 
+    except Exception as e:
+        print(e)
+`;
+                } else if (language === "javascript") {
+                    stdinData = JSON.stringify(testCase.args);
+                    codeToRun = `
+${codeMap[language]}
 
-                const consolePart = parts[0] || "";
-                const resultPart = (parts[1] || "").trim();
-
-                setConsoleOutput(consolePart);
-                setResultOutput(resultPart);
-
-                // Check against expected output
-                const expected = TEST_CASES[activeTestCase].output.trim();
-
-                // Simple string comparison for now. Ideally parse JSON for structured data.
-                if (resultPart === expected) {
-                    setIsCorrect(true);
-                } else {
-                    setIsCorrect(false);
-                }
-            } else {
-                setConsoleOutput(`Error: ${data.message}\n${data.error || ''}`);
-                setResultOutput("Error");
-                setIsCorrect(false);
-            }
-        } catch (error) {
-            setConsoleOutput(`Network Error: ${error.message}`);
-            setResultOutput("Network Error");
-        } finally {
-            setIsRunning(false);
+const fs = require('fs');
+try {
+    const input = fs.readFileSync(0, 'utf-8');
+    if (input) {
+        const args = JSON.parse(input);
+        const ret = decodeLogic(...args);
+        console.log("\\n---RESULT---");
+        if (ret !== undefined) {
+             console.log(JSON.stringify(ret).replace(/\\s/g, ''));
+        } else {
+             console.log("undefined");
         }
+    }
+} catch(e) {
+    console.log(e.toString());
+}
+`;
+                } else if (language === "cpp") {
+                    const nums = testCase.args[0];
+                    const target = testCase.args[1];
+                    stdinData = `${nums.length} ${nums.join(' ')} ${target}`;
+
+                    codeToRun = `
+${codeMap[language]}
+
+int main() {
+    int n;
+    if (cin >> n) {
+        vector<int> nums(n);
+        for (int i = 0; i < n; ++i) {
+            cin >> nums[i];
+        }
+        int target;
+        cin >> target;
+        
+        Solution s;
+        vector<int> result = s.decodeLogic(nums, target);
+        
+        cout << "\\n---RESULT---" << endl;
+        cout << "[";
+        for (size_t i = 0; i < result.size(); ++i) {
+            cout << result[i] << (i < result.size() - 1 ? "," : "");
+        }
+        cout << "]" << endl;
+    }
+    return 0;
+}
+`;
+                } else if (language === "java") {
+                    const nums = testCase.args[0];
+                    const target = testCase.args[1];
+                    stdinData = `${nums.length} ${nums.join(' ')} ${target}`;
+
+                    // Parse user code to separate imports and class
+                    const lines = codeMap[language].split('\n');
+                    const imports = lines.filter(line => line.trim().startsWith('import ')).join('\n');
+                    const otherCode = lines.filter(line => !line.trim().startsWith('import ')).join('\n');
+
+                    // Construct code with Main class FIRST, then Solution class
+                    codeToRun = `
+${imports}
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        if (scanner.hasNextInt()) {
+            int n = scanner.nextInt();
+            int[] nums = new int[n];
+            for (int i = 0; i < n; i++) {
+                nums[i] = scanner.nextInt();
+            }
+            int target = scanner.nextInt();
+            
+            Solution s = new Solution();
+            int[] result = s.decodeLogic(nums, target);
+            
+            System.out.println("\\n---RESULT---");
+            System.out.print("[");
+            for (int i = 0; i < result.length; i++) {
+                System.out.print(result[i] + (i < result.length - 1 ? "," : ""));
+            }
+            System.out.println("]");
+        }
+    }
+}
+
+${otherCode}
+`;
+                }
+
+                const files = [{ content: codeToRun }];
+                if (language === "java") {
+                    files[0].name = "Main.java";
+                }
+
+                const response = await fetch('http://localhost:5000/api/public/code/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        teamId,
+                        language: language === 'cpp' ? 'c++' : language,
+                        version: LANGUAGE_VERSIONS[language],
+                        files: files,
+                        stdin: stdinData,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const fullOutput = data.output || data.error || "";
+                    const splitMarker = "---RESULT---";
+                    let log = fullOutput;
+                    let result = "";
+
+                    if (fullOutput.includes(splitMarker)) {
+                        const parts = fullOutput.split(splitMarker);
+                        log = parts[0].trim();
+                        result = parts[1].trim();
+                    }
+
+                    const expected = testCase.output.replace(/\s/g, '');
+                    const actual = result.replace(/\s/g, '');
+
+                    newResults[index] = {
+                        index,
+                        log: log,
+                        result: result,
+                        isCorrect: actual === expected,
+                        status: "success"
+                    };
+                } else {
+                    newResults[index] = { index, log: data.message, result: "Error", isCorrect: false, status: "error" };
+                }
+
+            } catch (error) {
+                newResults[index] = { index, log: "Network Error", result: error.message, isCorrect: false, status: "error" };
+            }
+
+            setTestResults(prev => ({ ...prev, [index]: newResults[index] }));
+        }
+
+        setIsRunning(false);
     };
 
     const handleSubmit = () => {
@@ -139,28 +286,66 @@ const CrackTheCode = () => {
         console.log("Submitting code:", codeMap[language]);
     };
 
+    const isSubmitEnabled = timeLeft <= 180; // Enabled only in last 3 mins (3 * 60)
+
     return (
         <div className="crack-page">
-            <header className="main-header">
-                <h1>Reverse Engineering</h1>
+            <header className="main-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h1 style={{
+                    background: 'linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textTransform: 'uppercase',
+                    fontSize: '2rem',
+                    fontWeight: '800',
+                    margin: 0
+                }}>Reverse Engineering</h1>
+                <div className="timer" style={{
+                    fontSize: '1.5em',
+                    fontWeight: 'bold',
+                    marginRight: '20px',
+                    fontFamily: 'monospace'
+                }}>
+                    <span style={{ color: 'aliceblue' }}>Time Left: </span>
+                    <span style={{ color: timeLeft > 1200 ? '#28a745' : (timeLeft > 300 ? '#e67300' : '#dc3545') }}>
+                        {formatTime(timeLeft)}
+                    </span>
+                </div>
             </header>
 
             <div className="crack-container">
                 {/* Left Panel - Test Cases */}
                 <div className="panel left-panel">
                     <div className="panel-header">
-                        <h2>Testcase</h2>
+                        <h2>Testcases</h2>
                     </div>
                     <div className="testcase-tabs">
-                        {TEST_CASES.map((_, index) => (
-                            <button
-                                key={index}
-                                className={`tab-btn ${activeTestCase === index ? 'active' : ''}`}
-                                onClick={() => setActiveTestCase(index)}
-                            >
-                                Case {index + 1}
-                            </button>
-                        ))}
+                        {TEST_CASES.map((_, index) => {
+                            const result = testResults[index];
+                            let statusClass = '';
+                            if (result) {
+                                statusClass = result.isCorrect ? 'success' : 'error';
+                            }
+
+                            return (
+                                <button
+                                    key={index}
+                                    className={`tab-btn ${activeTestCase === index ? 'active' : ''} ${statusClass}`}
+                                    onClick={() => setActiveTestCase(index)}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                    Case {index + 1}
+                                    {result?.isCorrect !== undefined && (
+                                        <span style={{
+                                            color: result.isCorrect ? '#28a745' : '#dc3545',
+                                            fontSize: '1.2em'
+                                        }}>
+                                            {result.isCorrect ? '●' : '●'}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
                     <div className="testcase-content">
                         <div className="io-group">
@@ -193,7 +378,14 @@ const CrackTheCode = () => {
                                     </div>
                                 ) : 'Run'}
                             </button>
-                            <button className="btn submit-btn" onClick={handleSubmit}>Submit</button>
+                            <button
+                                className="btn submit-btn"
+                                onClick={handleSubmit}
+                                disabled={!isSubmitEnabled}
+                                title={!isSubmitEnabled ? "Submit is enabled only in the last 3 minutes" : "Submit your code"}
+                            >
+                                Submit
+                            </button>
                         </div>
                     </div>
                     <div className="monaco-wrapper">
@@ -212,22 +404,22 @@ const CrackTheCode = () => {
                         />
                     </div>
 
-                    <div className="output-section" style={{ marginTop: '10px', height: '200px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}>
-                        <div className="console-box" style={{ flex: 1, backgroundColor: '#1e1e1e', color: '#fff', padding: '10px', overflowY: 'auto', border: '1px solid #333', fontFamily: 'monospace' }}>
-                            <div style={{ color: '#888', marginBottom: '5px' }}>Console Output:</div>
-                            <pre style={{ margin: 0 }}>{consoleOutput}</pre>
+                    <div className="output-section">
+                        <div className="console-box">
+                            <div style={{ color: '#aaa', marginBottom: '5px', fontSize: '0.85rem' }}>Console Output:</div>
+                            <pre style={{ margin: 0, color: '#e0e0e0' }}>
+                                {testResults[activeTestCase]?.log || "Run code to see output..."}
+                            </pre>
                         </div>
                         <div className="result-box" style={{
-                            flex: 1,
-                            backgroundColor: '#1e1e1e',
-                            color: '#fff',
-                            padding: '10px',
-                            overflowY: 'auto',
-                            fontFamily: 'monospace',
-                            border: isCorrect === null ? '1px solid #333' : (isCorrect ? '2px solid #28a745' : '2px solid #dc3545')
+                            border: testResults[activeTestCase]?.isCorrect === undefined
+                                ? '1px solid rgba(255, 255, 255, 0.1)'
+                                : (testResults[activeTestCase]?.isCorrect ? '2px solid #28a745' : '2px solid #dc3545')
                         }}>
-                            <div style={{ color: '#888', marginBottom: '5px' }}>Return Value:</div>
-                            <pre style={{ margin: 0 }}>{resultOutput}</pre>
+                            <div style={{ color: '#aaa', marginBottom: '5px', fontSize: '0.85rem' }}>Return Value:</div>
+                            <pre style={{ margin: 0, color: '#e0e0e0' }}>
+                                {testResults[activeTestCase]?.result || ""}
+                            </pre>
                         </div>
                     </div>
                 </div>
