@@ -8,18 +8,23 @@ const {
     updateTeams,
     swapTeams,
     finishMatch,
-    getTeam  
+    getTeam,
+    startAllDeadlockMatches
 } = require("../../controller/admin.controller.js");
+
+const { solveProblem } = require("../../controller/deadlock.controller.js");
 
 
 router.post("/match", createMatch);
+router.post("/solve", solveProblem);
+router.post("/deadlock/start-all", startAllDeadlockMatches);
+router.post("/team", createTeam);
+
 router.patch("/match/:id/teams", updateTeams);
 router.patch("/match/:id/swap", swapTeams);
 router.patch("/match/:id/reset", resetMatch);
 router.patch("/match/:id/finish", finishMatch);
 
 router.get("/teams", getTeam);
-
-router.post("/team", createTeam);
 
 module.exports = router;

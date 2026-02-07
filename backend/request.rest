@@ -16,22 +16,25 @@ POST http://localhost:5000/api/admin/deadlock/team
 Content-Type: application/json
 
 {
-  "name": "Team Delta",
+  "name": "Team W2",
   "members": ["J", "K", "L"]
 }
 ###
 POST http://localhost:5000/api/admin/deadlock/match
 Content-Type: application/json
 
-{}
+{
+  "teamA": "6983c46674f46d9b6fac6a24",
+  "teamB": "6983c47c74f46d9b6fac6a26"
+}
 
 ###
-PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/teams
+PATCH http://localhost:5000/api/admin/deadlock/match/6983c50374f46d9b6fac6a2c/teams
 Content-Type: application/json
 
 {
-  "teamA": "698228733adcaf19377c84e3",
-  "teamB": "698228893adcaf19377c84e5"
+  "teamA": "6983c46674f46d9b6fac6a24",
+  "teamB": "6983c47c74f46d9b6fac6a26"
 }
 
 ### 
@@ -48,4 +51,16 @@ Content-Type: application/json
 {
   "winner": "698228733adcaf19377c84e3"
 }
+###
+
+POST http://localhost:5000/api/admin/deadlock/solve
+Content-Type: application/json
+
+{
+  "matchId": "6983c50374f46d9b6fac6a2c",
+  "solvingTeamId": "6983c46674f46d9b6fac6a24"
+}
+
+
+
 

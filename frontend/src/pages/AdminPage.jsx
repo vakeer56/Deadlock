@@ -4,7 +4,8 @@ import {
     createMatch,
     updateMatchTeams,
     swapMatchTeams,
-    resetMatch
+    resetMatch,
+    startAllMatches
 } from '../api/deadlockAdmin';
 import TeamCard from '../components/TeamCard';
 import './Admin.css';
@@ -114,6 +115,20 @@ const AdminPage = () => {
         showToast("Board cleared");
     };
 
+    const handleStartAll = async () => {
+        try {
+            const res = await startAllMatches();
+            showToast(`Started ${res.totalMatches} matches`);
+            setUnassignedTeams([]);
+            setTeamA([]);
+            setTeamB([]);
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to start all matches");
+        }
+    };
+
+
     return (
         <div className="admin-container">
             {toast && <div className="toast">{toast}</div>}
@@ -121,6 +136,7 @@ const AdminPage = () => {
             <header className="admin-header">
                 <h1>DEADLOCK ADMIN</h1>
                 <div className="admin-actions">
+                    <button onClick={handleStartAll} className="btn-primary">START ALL MATCHES</button>
                     <button onClick={handleSwap}>SWAP</button>
                     <button onClick={handleClearBoard} style={{ color: 'red' }}>
                         CLEAR BOARD
