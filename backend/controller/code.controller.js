@@ -79,6 +79,7 @@ const executeCode = async (req, res) => {
             teamId,
             crackCodeSessionId: session._id,
             input: stdin || "", // Saving input/stdin
+            code: files[0].content, // Saving the submitted code
             output: output || error || "", // Saving whatever came back
             attemptNumber: session.attemptsUsed
         });
