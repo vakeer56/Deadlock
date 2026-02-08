@@ -45,7 +45,8 @@ class Solution {
 const TEST_CASES = [
     { input: "nums = [2,7,11,15], target = 9", output: "[0,1]", args: [[2, 7, 11, 15], 9] },
     { input: "nums = [3,2,4], target = 6", output: "[1,2]", args: [[3, 2, 4], 6] },
-    { input: "nums = [3,3], target = 6", output: "[0,1]", args: [[3, 3], 6] }
+    { input: "nums = [3,3], target = 6", output: "[0,1]", args: [[3, 3], 6] },
+    { input: "nums = [2,5,5,11], target = 10", output: "[1,2]", args: [[2, 5, 5, 11], 10], hidden: true }
 ];
 
 const CrackTheCode = () => {
@@ -91,33 +92,49 @@ const CrackTheCode = () => {
     };
 
     const [testResults, setTestResults] = useState({}); // { 0: { log, result, isCorrect }, 1: ... }
+    const [hiddenTestResult, setHiddenTestResult] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
 
-    const handleRun = async () => {
+    // Editor Mount Handler for IntelliSense
+    const handleEditorDidMount = (editor, monaco) => {
+        // Enable better IntelliSense for JavaScript/TypeScript by default
+        monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+            noSemanticValidation: false,
+            noSyntaxValidation: false,
+        });
+
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+            target: monaco.languages.typescript.ScriptTarget.ES2016,
+            allowNonTsExtensions: true,
+            moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+            module: monaco.languages.typescript.ModuleKind.CommonJS,
+            noEmit: true,
+            lib: ["esnext", "dom"], // Crucial for standard library IntelliSense (console, Math, etc.)
+            typeRoots: ["node_modules/@types"]
+        });
+
+        // Also add extra libs for specific global functions if needed
+        monaco.languages.typescript.javascriptDefaults.addExtraLib(`
+            declare var console: {
+                log(...data: any[]): void;
+                error(...data: any[]): void;
+                warn(...data: any[]): void;
+                info(...data: any[]): void;
+            };
+        `, 'ts:filename/console.d.ts');
+    };
+
+    const executeTestCase = async (testCase, lang, code) => {
         const teamId = localStorage.getItem("teamId");
-        if (!teamId) {
-            alert("Team ID not found. Please login again.");
-            return;
-        }
+        let codeToRun = code;
+        let stdinData = "";
 
-        setIsRunning(true);
-        setTestResults({});
-
-        const newResults = {};
-
-        // Use standard for loop for sequential execution
-        for (let index = 0; index < TEST_CASES.length; index++) {
-            const testCase = TEST_CASES[index];
-            try {
-                let codeToRun = codeMap[language];
-                let stdinData = "";
-
-                if (language === "python") {
-                    stdinData = JSON.stringify(testCase.args);
-                    codeToRun = `
+        if (lang === "python") {
+            stdinData = JSON.stringify(testCase.args);
+            codeToRun = `
 import sys
 import json
-${codeMap[language]}
+${code}
 
 if __name__ == "__main__":
     try:
@@ -130,10 +147,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 `;
-                } else if (language === "javascript") {
-                    stdinData = JSON.stringify(testCase.args);
-                    codeToRun = `
-${codeMap[language]}
+        } else if (lang === "javascript") {
+            stdinData = JSON.stringify(testCase.args);
+            codeToRun = `
+${code}
 
 const fs = require('fs');
 try {
@@ -152,13 +169,13 @@ try {
     console.log(e.toString());
 }
 `;
-                } else if (language === "cpp") {
-                    const nums = testCase.args[0];
-                    const target = testCase.args[1];
-                    stdinData = `${nums.length} ${nums.join(' ')} ${target}`;
+        } else if (lang === "cpp") {
+            const nums = testCase.args[0];
+            const target = testCase.args[1];
+            stdinData = `${nums.length} ${nums.join(' ')} ${target}`;
 
-                    codeToRun = `
-${codeMap[language]}
+            codeToRun = `
+${code}
 
 int main() {
     int n;
@@ -183,18 +200,18 @@ int main() {
     return 0;
 }
 `;
-                } else if (language === "java") {
-                    const nums = testCase.args[0];
-                    const target = testCase.args[1];
-                    stdinData = `${nums.length} ${nums.join(' ')} ${target}`;
+        } else if (lang === "java") {
+            const nums = testCase.args[0];
+            const target = testCase.args[1];
+            stdinData = `${nums.length} ${nums.join(' ')} ${target}`;
 
-                    // Parse user code to separate imports and class
-                    const lines = codeMap[language].split('\n');
-                    const imports = lines.filter(line => line.trim().startsWith('import ')).join('\n');
-                    const otherCode = lines.filter(line => !line.trim().startsWith('import ')).join('\n');
+            // Parse user code to separate imports and class
+            const lines = code.split('\n');
+            const imports = lines.filter(line => line.trim().startsWith('import ')).join('\n');
+            const otherCode = lines.filter(line => !line.trim().startsWith('import ')).join('\n');
 
-                    // Construct code with Main class FIRST, then Solution class
-                    codeToRun = `
+            // Construct code with Main class FIRST, then Solution class
+            codeToRun = `
 ${imports}
 import java.util.*;
 
@@ -224,58 +241,105 @@ public class Main {
 
 ${otherCode}
 `;
-                }
+        }
 
-                const files = [{ content: codeToRun }];
-                if (language === "java") {
-                    files[0].name = "Main.java";
-                }
+        const files = [{ content: codeToRun }];
+        if (lang === "java") {
+            files[0].name = "Main.java";
+        }
 
-                const response = await fetch('http://localhost:5000/api/public/code/execute', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        teamId,
-                        language: language === 'cpp' ? 'c++' : language,
-                        version: LANGUAGE_VERSIONS[language],
-                        files: files,
-                        stdin: stdinData,
-                    }),
-                });
+        const response = await fetch('http://localhost:5000/api/public/code/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                teamId,
+                language: lang === 'cpp' ? 'c++' : lang,
+                version: LANGUAGE_VERSIONS[lang],
+                files: files,
+                stdin: stdinData,
+            }),
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
-                if (response.ok) {
-                    const fullOutput = data.output || data.error || "";
-                    const splitMarker = "---RESULT---";
-                    let log = fullOutput;
-                    let result = "";
+        if (response.ok) {
+            const fullOutput = data.output || data.error || "";
+            const splitMarker = "---RESULT---";
+            let log = fullOutput;
+            let result = "";
 
-                    if (fullOutput.includes(splitMarker)) {
-                        const parts = fullOutput.split(splitMarker);
-                        log = parts[0].trim();
-                        result = parts[1].trim();
-                    }
-
-                    const expected = testCase.output.replace(/\s/g, '');
-                    const actual = result.replace(/\s/g, '');
-
-                    newResults[index] = {
-                        index,
-                        log: log,
-                        result: result,
-                        isCorrect: actual === expected,
-                        status: "success"
-                    };
-                } else {
-                    newResults[index] = { index, log: data.message, result: "Error", isCorrect: false, status: "error" };
-                }
-
-            } catch (error) {
-                newResults[index] = { index, log: "Network Error", result: error.message, isCorrect: false, status: "error" };
+            if (fullOutput.includes(splitMarker)) {
+                const parts = fullOutput.split(splitMarker);
+                log = parts[0].trim();
+                result = parts[1].trim();
             }
 
-            setTestResults(prev => ({ ...prev, [index]: newResults[index] }));
+            const expected = testCase.output.replace(/\s/g, '');
+            const actual = result.replace(/\s/g, '');
+
+            return {
+                log: log,
+                result: result,
+                isCorrect: actual === expected,
+                status: "success"
+            };
+        } else {
+            return { log: data.message, result: "Error", isCorrect: false, status: "error" };
+        }
+    };
+
+    const handleRun = async () => {
+        const teamId = localStorage.getItem("teamId");
+        if (!teamId) {
+            alert("Team ID not found. Please login again.");
+            return;
+        }
+
+        setIsRunning(true);
+        setTestResults({});
+        setHiddenTestResult(null);
+
+        let allVisiblePassed = true;
+
+        // 1. Run Visible Test Cases
+        for (let index = 0; index < TEST_CASES.length; index++) {
+            const testCase = TEST_CASES[index];
+            if (testCase.hidden) continue;
+
+            try {
+                const result = await executeTestCase(testCase, language, codeMap[language]);
+                setTestResults(prev => ({ ...prev, [index]: result }));
+
+                if (!result.isCorrect) {
+                    allVisiblePassed = false;
+                }
+            } catch (error) {
+                setTestResults(prev => ({
+                    ...prev,
+                    [index]: { log: "Network Error", result: error.message, isCorrect: false, status: "error" }
+                }));
+                allVisiblePassed = false;
+            }
+        }
+
+        // 2. Run Hidden Test Case ONLY if all visible passed
+        if (allVisiblePassed) {
+            const hiddenTestCase = TEST_CASES.find(tc => tc.hidden);
+            if (hiddenTestCase) {
+                try {
+                    const result = await executeTestCase(hiddenTestCase, language, codeMap[language]);
+                    if (result.isCorrect) {
+                        setHiddenTestResult("Hidden Test Case Passed!");
+                    } else {
+                        setHiddenTestResult("Hidden Test Case Failed");
+                    }
+                } catch (e) {
+                    setHiddenTestResult("Hidden Test Case Error");
+                }
+            }
+        } else {
+            // Optional: You could explicitly set it to null or a message saying "Fix visible cases"
+            setHiddenTestResult(null);
         }
 
         setIsRunning(false);
@@ -320,7 +384,7 @@ ${otherCode}
                         <h2>Testcases</h2>
                     </div>
                     <div className="testcase-tabs">
-                        {TEST_CASES.map((_, index) => {
+                        {TEST_CASES.filter(tc => !tc.hidden).map((_, index) => {
                             const result = testResults[index];
                             let statusClass = '';
                             if (result) {
@@ -340,7 +404,7 @@ ${otherCode}
                                             color: result.isCorrect ? '#28a745' : '#dc3545',
                                             fontSize: '1.2em'
                                         }}>
-                                            {result.isCorrect ? '●' : '●'}
+                                            {result.isCorrect ? '✔' : '✘'}
                                         </span>
                                     )}
                                 </button>
@@ -357,6 +421,22 @@ ${otherCode}
                             <div className="io-box">{TEST_CASES[activeTestCase].output}</div>
                         </div>
                     </div>
+
+                    {/* Hidden Test Result Display */}
+                    {hiddenTestResult && (
+                        <div style={{
+                            padding: '15px',
+                            margin: '10px 20px',
+                            background: hiddenTestResult.includes('Passed') ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)',
+                            border: `1px solid ${hiddenTestResult.includes('Passed') ? '#28a745' : '#dc3545'}`,
+                            borderRadius: '8px',
+                            color: hiddenTestResult.includes('Passed') ? '#28a745' : '#dc3545',
+                            fontWeight: 'bold',
+                            textAlign: 'center'
+                        }}>
+                            {hiddenTestResult}
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Panel - Editor */}
@@ -395,11 +475,18 @@ ${otherCode}
                             theme="vs-dark"
                             value={codeMap[language]}
                             onChange={handleCodeChange}
+                            onMount={handleEditorDidMount}
                             options={{
                                 minimap: { enabled: false },
                                 fontSize: 14,
                                 scrollBeyondLastLine: false,
                                 automaticLayout: true,
+                                quickSuggestions: { other: true, comments: true, strings: true },
+                                parameterHints: { enabled: true },
+                                suggestOnTriggerCharacters: true,
+                                acceptSuggestionOnEnter: "on",
+                                tabCompletion: "on",
+                                wordBasedSuggestions: true,
                             }}
                         />
                     </div>

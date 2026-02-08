@@ -1,5 +1,6 @@
 /* Global Styles */
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 .crack-page {
     /* Dark gradient background to pop the glass effect */
     background: linear-gradient(135deg, #121212 0%, #1e1e2f 100%);
@@ -70,6 +71,8 @@
 
 .right-panel {
     flex: 1;
+    overflow-y: auto;
+    /* Allow scrolling for long outputs */
 }
 
 /* Panel Headers */
