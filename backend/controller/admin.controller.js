@@ -414,3 +414,39 @@ exports.startAllDeadlockMatches = async (req, res) => {
     }
 };
 
+/* ----------------------------------------------------
+CHECK TEAM EXISTENCE
+---------------------------------------------------- */
+exports.checkTeam = async (req, res) => {
+    try {
+        const { name } = req.body;
+
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                message: "Team name is required"
+            });
+        }
+
+        const team = await Team.findOne({ name });
+
+        if (team) {
+            return res.json({
+                success: true,
+                exists: true,
+                team
+            });
+        } else {
+            return res.json({
+                success: true,
+                exists: false
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to check team",
+            error: error.message
+        });
+    }
+};

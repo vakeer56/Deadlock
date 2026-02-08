@@ -9,7 +9,8 @@ const {
     swapTeams,
     finishMatch,
     getTeam,
-    startAllDeadlockMatches
+    startAllDeadlockMatches,
+    checkTeam
 } = require("../../controller/admin.controller.js");
 
 const { solveProblem } = require("../../controller/deadlock.controller.js");
@@ -19,6 +20,7 @@ router.post("/match", createMatch);
 router.post("/solve", solveProblem);
 router.post("/deadlock/start-all", startAllDeadlockMatches);
 router.post("/team", createTeam);
+router.post("/team/check", checkTeam);
 
 router.patch("/match/:id/teams", updateTeams);
 router.patch("/match/:id/swap", swapTeams);
