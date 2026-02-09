@@ -363,7 +363,7 @@ ${otherCode}
                     fontSize: '2rem',
                     fontWeight: '800',
                     margin: 0
-                }}>Reverse Engineering</h1>
+                }}>Crack The Code</h1>
                 <div className="timer" style={{
                     fontSize: '1.5em',
                     fontWeight: 'bold',

@@ -414,3 +414,41 @@ exports.startAllDeadlockMatches = async (req, res) => {
     }
 };
 
+/* ----------------------------------------------------
+CHECK TEAM EXISTENCE
+---------------------------------------------------- */
+exports.checkTeam = async (req, res) => {
+    try {
+        const { name } = req.params;
+
+        // Case-insensitive search
+        const team = await Team.findOne({
+            name: { $regex: new RegExp(`^${name}$`, 'i') }
+        });
+
+        if (team) {
+            return res.json({
+                success: true,
+                exists: true,
+                team: {
+                    _id: team._id,
+                    name: team.name,
+                    currentRound: team.currentRound
+                }
+            });
+        }
+
+        res.json({
+            success: true,
+            exists: false
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to check team",
+            error: error.message
+        });
+    }
+};
+

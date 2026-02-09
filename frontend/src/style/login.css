@@ -1,211 +1,1200 @@
 /* ============================
    FONT IMPORTS
 ============================ */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap");
 
 /* ============================
-   RESET
+   SCOPED CONTAINER
 ============================ */
-* {
-  box-sizing: border-box;
-}
-
-body {
+/* ============================
+   SCOPED CONTAINER
+============================ */
+#login-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
   margin: 0;
-  min-height: 100vh;
-  background: #050505;
-  color: #ffffff;
-  font-family: "Inter", sans-serif;
-}
-
-/* ============================
-   CENTER EVERYTHING (KEY FIX)
-============================ */
-.deadlock-container,
-.stage,
-.page {
-  min-height: 100vh;
-  width: 100%;
+  padding: 0;
+  background-color: #050505;
+  /* Stronger radial gradient following mouse */
+  background-image:
+    radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 215, 0, 0.15) 0%,
+      transparent 50%),
+    linear-gradient(rgba(255, 215, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 215, 0, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 50px 50px, 50px 50px;
+  color: #e0e0e0;
+  font-family: "Rajdhani", sans-serif;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;        /* vertical center */
-  justify-content: center;    /* horizontal center */
-  background:
-    radial-gradient(circle at top, rgba(255, 215, 0, 0.18), transparent 55%),
-    radial-gradient(circle at bottom, rgba(255, 215, 0, 0.1), transparent 60%),
-    #050505;
-}
-.deadlock-container{
-    min-width: 100dvw;
-    min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
 }
 
-/* ============================
-   MAIN CARD (CENTERED)
-============================ */
-.card,
-.panel,
-.glass-card {
-  width: 520px;
-  max-width: 92%;
-  padding: 46px 42px;
-  border-radius: 26px;
-  margin: 0 auto;            /* HARD CENTER */
-  background: linear-gradient(
-    180deg,
-    rgba(20, 20, 20, 0.95),
-    rgba(10, 10, 10, 0.95)
-  );
-  border: 1px solid rgba(255, 215, 0, 0.28);
-  box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.85),
-    inset 0 0 0 1px rgba(255, 215, 0, 0.08);
-}
-
-/* ============================
-   TITLE
-============================ */
-.title,
-.event-title,
-.header h1 {
-  text-align: center;
-  font-family: "Orbitron", sans-serif;
-  font-size: 52px;
-  letter-spacing: 5px;
-  color: #ffd700;
-  margin-bottom: 12px;
-}
-
-/* ============================
-   SUBTITLE
-============================ */
-.subtitle,
-.event-tagline,
-.tagline {
-  text-align: center;
-  font-size: 14px;
-  color: #aaaaaa;
-  margin-bottom: 36px;
-}
-
-/* ============================
-   FORM SECTIONS
-============================ */
-.section,
-.block,
-.input-group {
-  margin-bottom: 26px;
-}
-
-/* ============================
-   LABELS
-============================ */
-label {
-  display: block;
-  text-align: left;
-  font-size: 13px;
-  letter-spacing: 0.6px;
-  color: #bbbbbb;
-  margin-bottom: 8px;
-}
-
-/* ============================
-   INPUTS
-============================ */
-input {
+/* More visible animated digital rain/noise effect */
+#login-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 15px 18px;
-  border-radius: 14px;
-  background: #0b0b0b;
-  border: 1px solid #2a2a2a;
-  color: white;
-  font-size: 15px;
-  outline: none;
+  height: 100%;
+  background: repeating-linear-gradient(0deg,
+      transparent 0,
+      transparent 50px,
+      rgba(255, 215, 0, 0.05) 50px,
+      rgba(255, 215, 0, 0.05) 51px);
+  background-size: 100% 51px;
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
-input:focus {
-  border-color: #ffd700;
-  box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.35);
+/* Floating interactive particles */
+#login-page::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: rotate(20deg);
+  animation: floatingParticles 60s linear infinite;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes floatingParticles {
+  0% {
+    transform: rotate(20deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(20deg) translateY(-100px);
+  }
+}
+
+@keyframes cosmicGrid {
+  0% {
+    transform: rotateX(45deg) translateY(0);
+  }
+
+  100% {
+    transform: rotateX(45deg) translateY(-50%);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+
+  100% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
 }
 
 /* ============================
-   MEMBER ROW
+   HEADER BRANDS
 ============================ */
-.member-row,
-.member {
+#login-page .login-header {
+  position: absolute;
+  top: 40px;
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+#login-page .brand-left,
+#login-page .brand-right {
+  font-family: "Orbitron", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 15px;
+}
+
+#login-page .brand-left {
+  color: #ffd700;
+  /* Gold */
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+#login-page .brand-logo {
+  height: 80px;
+  /* Increased size */
+  width: auto;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+  transition: transform 0.3s ease;
+}
+
+#login-page .brand-logo:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+#login-page .brand-right {
+  color: #a0d8ef;
+  /* Light Blue */
+  text-shadow: 0 0 15px rgba(160, 216, 239, 0.6);
 }
 
 /* ============================
-   MEMBER BADGE
+   MAIN CONTENT
 ============================ */
-.avatar,
-.badge,
-.index {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ffd700, #b89200);
-  color: #000;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-}
-
-/* ============================
-   BUTTON
-============================ */
-.deploy-btn,
-.cta {
+#login-page .login-content {
+  z-index: 5;
   width: 100%;
-  margin-top: 18px;
-  padding: 18px;
-  border-radius: 18px;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  animation: fadeIn 1.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#login-page .main-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 12px;
+  color: transparent;
+  -webkit-text-stroke: 2px #d4af37;
+  text-transform: uppercase;
+  margin-bottom: 60px;
+  position: relative;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+/* ============================
+   INPUT GROUPS
+============================ */
+/* ============================
+   INPUT GROUPS (CYBER INTERACTIVE)
+============================ */
+#login-page .cyber-input-group {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 50px;
+}
+
+#login-page .team-input {
+  width: 100%;
+  background: rgba(10, 10, 10, 0.6);
   border: none;
-  background: linear-gradient(135deg, #ffd700, #caa200);
-  color: #000;
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.deploy-btn:hover,
-.cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 36px rgba(255, 215, 0, 0.45);
-}
-
-/* ============================
-   FOOTER NOTE
-============================ */
-.footer,
-.footer-note {
-  margin-top: 26px;
+  border-bottom: 2px solid #555;
+  padding: 20px 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 24px;
+  color: #fff;
   text-align: center;
-  font-size: 12px;
-  color: #777;
+  letter-spacing: 2px;
+  /* Removed uppercase transform */
+  transition: all 0.3s ease;
+  z-index: 10;
+  position: relative;
+}
+
+/* ... existing styles ... */
+
+/* ============================
+   REDIRECT OVERLAY
+============================ */
+#redirect-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  /* Above notifications */
+  animation: fadeInOverlay 0.5s ease-out;
+}
+
+.redirect-content {
+  text-align: center;
+  color: #00ff9d;
+  /* Success Green */
+}
+
+.redirect-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(0, 255, 157, 0.6);
+  animation: pulseGreen 1s infinite alternate;
+}
+
+.redirect-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(0, 255, 157, 0.3);
+  border-top-color: #00ff9d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 30px;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGreen {
+  from {
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.4);
+    opacity: 0.8;
+  }
+
+  to {
+    text-shadow: 0 0 30px rgba(0, 255, 157, 0.9);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#login-page .team-input:focus {
+  outline: none;
+  background: rgba(20, 20, 20, 0.8);
+  border-bottom-color: transparent;
+  /* Handled by bar */
+}
+
+#login-page .team-input:hover {
+  background: rgba(30, 30, 30, 0.9);
+  border-bottom-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  cursor: text;
+}
+
+/* Floating Label */
+#login-page .input-label {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #888;
+  font-family: "Orbitron", sans-serif;
+  font-size: 20px;
+  letter-spacing: 2px;
+  transition: 0.3s ease all;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Float up when focused or has content (valid) */
+#login-page .team-input:focus~.input-label,
+#login-page .team-input:valid~.input-label {
+  top: -15px;
+  font-size: 14px;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  letter-spacing: 4px;
+}
+
+/* Animated Bottom Bar */
+#login-page .input-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: #555;
+  display: block;
+}
+
+#login-page .input-bar::before,
+#login-page .input-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: #ffd700;
+  transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+#login-page .input-bar::before {
+  left: 50%;
+}
+
+#login-page .input-bar::after {
+  right: 50%;
+}
+
+/* Expand bar from center on focus */
+#login-page .team-input:focus~.input-bar::before,
+#login-page .team-input:focus~.input-bar::after {
+  width: 50%;
+}
+
+/* Highlight/Scan effect */
+#login-page .input-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+  transition: 0.5s;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#login-page .team-input:focus~.input-highlight {
+  width: 100%;
+  transition: 0.5s ease;
 }
 
 /* ============================
-   MOBILE
+   OPERATIVES SECTION
 ============================ */
-@media (max-width: 600px) {
-  .card,
-  .panel,
-  .glass-card {
-    padding: 34px 26px;
+#login-page .operatives-section {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+#login-page .section-label {
+  font-family: "Orbitron", sans-serif;
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: #666;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+#login-page .operatives-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+#login-page .operative-card {
+  flex: 1;
+  min-width: 180px;
+  max-width: 220px;
+  /* Fix: Prevent 3rd item from stretching too wide */
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid #333;
+  padding: 15px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#login-page .operative-card:hover,
+#login-page .operative-card:focus-within {
+  border-color: #555;
+  background: rgba(30, 30, 30, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+#login-page .op-number {
+  font-family: "Orbitron", sans-serif;
+  font-size: 20px;
+  color: #ffd700;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+#login-page .operative-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: #bbb;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 18px;
+  width: 100%;
+  padding: 5px;
+  text-align: left;
+  box-shadow: none !important;
+  /* Override global input styles */
+}
+
+#login-page .operative-input:focus {
+  background: transparent;
+  border-bottom: 1px solid #ffd700;
+  color: #fff;
+  box-shadow: none !important;
+}
+
+#login-page .operative-input::placeholder {
+  color: #444;
+  font-family: "Rajdhani", sans-serif;
+  text-transform: none;
+}
+
+/* ============================
+   CYBER NOTIFICATION (TOAST)
+============================ */
+.cyber-notification {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 5, 5, 0.95);
+  border: 1px solid #ff003c;
+  border-left: 4px solid #ff003c;
+  color: #ff003c;
+  padding: 20px 30px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  z-index: 10000;
+  box-shadow: 0 0 20px rgba(255, 0, 60, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  backdrop-filter: blur(5px);
+  animation: slideInDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.cyber-notification.success {
+  border-color: #00ff9d;
+  color: #00ff9d;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+}
+
+.cyber-notification::before {
+  content: "⚠";
+  font-size: 24px;
+}
+
+.cyber-notification.success::before {
+  content: "✓";
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translate(-50%, -100px);
+    opacity: 0;
   }
 
-  .title,
-  .event-title {
-    font-size: 40px;
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
   }
 }
 
+/* ============================
+   DEPLOY BUTTON
+============================ */
+#login-page .deploy-btn {
+  background: transparent;
+  border: 2px solid #ffd700;
+  color: #ffd700;
+  padding: 18px 50px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+  border-radius: 4px;
+}
 
+#login-page .deploy-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  transition: 0.5s;
+}
 
+#login-page .deploy-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  transform: scale(1.02);
+}
+
+#login-page .deploy-btn:hover::before {
+  left: 100%;
+}
+
+#login-page .deploy-btn:active {
+  transform: scale(0.98);
+}
+
+/* ============================
+   RESPONSIVE
+============================ */
+@media (max-width: 768px) {
+  #login-page .main-title {
+    font-size: 50px;
+    -webkit-text-stroke: 1px #d4af37;
+  }
+
+  #login-page .login-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  #login-page .operatives-grid {
+    flex-direction: column;
+  }
+
+  #login-page .operative-card {
+    width: 100%;
+  }
+
+}
+
+/* ============================
+   CINEMATIC FULL-SCREEN LOADER
+============================ */
+#login-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #020202;
+  /* Stronger, noticeable grid with fluid motion */
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.15) 0%, transparent 70%),
+    linear-gradient(0deg, transparent 48%, rgba(255, 215, 0, 0.15) 50%, transparent 52%),
+    linear-gradient(90deg, transparent 48%, rgba(255, 215, 0, 0.15) 50%, transparent 52%);
+  background-size: 100% 100%, 80px 80px, 80px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: cyberFlow 4s linear infinite;
+  box-shadow: inset 0 0 100px #000;
+}
+
+@keyframes cyberFlow {
+  0% {
+    background-position: center, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: center, 0 80px, 80px 0;
+  }
+}
+
+.hologram-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 40px;
+  /* Removed border/box shadow for full-page feel */
+}
+
+/* Authentic Large Logo */
+.loading-logo-glow {
+  width: 250px;
+  /* Increased size */
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.4));
+  animation: breathe 4s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+  }
+
+  100% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 50px rgba(255, 215, 0, 0.8));
+  }
+}
+
+/* Cinematic Title */
+.cinematic-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 96px;
+  /* Massive Font */
+  font-weight: 900;
+  letter-spacing: 20px;
+  color: #fff;
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+  animation: textGlow 3s infinite alternate;
+}
+
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    opacity: 0.9;
+  }
+
+  100% {
+    text-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+    opacity: 1;
+  }
+}
+
+/* Text Container */
+.loading-text-container {
+  margin-top: 20px;
+}
+
+.loading-text {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 28px;
+  /* Larger Font */
+  font-weight: 600;
+  letter-spacing: 6px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+/* Authentic Progress Bar */
+.cyber-progress-container {
+  width: 60%;
+  /* Use more page width */
+  max-width: 800px;
+  height: 6px;
+  background: #111;
+  border-radius: 4px;
+  margin-top: 30px;
+  overflow: hidden;
+  box-shadow: 0 0 20px #000;
+}
+
+/* Progress Bar Fill */
+.cyber-progress-bar {
+  height: 100%;
+  background: #ffd700;
+  width: 0%;
+  box-shadow: 0 0 25px #ffd700;
+  transition: width 0.1s linear;
+}
+
+/* ============================
+   REVEAL ANIMATIONS (3D Fly-In)
+============================ */
+/* Initial state of login content */
+#login-page .login-content {
+  opacity: 0;
+  transform: perspective(1000px) translateZ(-100px) rotateX(20deg);
+  transition: opacity 1s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#login-page .login-header {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.8s ease 0.5s;
+}
+
+/* Revealed State */
+#login-page.loaded .login-content {
+  opacity: 1;
+  transform: perspective(1000px) translateZ(0) rotateX(0);
+}
+
+#login-page.loaded .login-header {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Animations */
+@keyframes spinRight {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinLeft {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes corePulse {
+  0% {
+    box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.5);
+    opacity: 0.8;
+  }
+
+  100% {
+    box-shadow: 0 0 50px 20px rgba(255, 255, 255, 0.9);
+    opacity: 1;
+  }
+}
+
+@keyframes loadingScan {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip: rect(13px, 9999px, 81px, 0);
+    transform: skew(0.81deg);
+  }
+
+  5% {
+    clip: rect(69px, 9999px, 8px, 0);
+    transform: skew(0.12deg);
+  }
+
+  10% {
+    clip: rect(31px, 9999px, 98px, 0);
+    transform: skew(0.48deg);
+  }
+
+  15% {
+    clip: rect(93px, 9999px, 34px, 0);
+    transform: skew(0.85deg);
+  }
+
+  20% {
+    clip: rect(10px, 9999px, 60px, 0);
+    transform: skew(0.14deg);
+  }
+
+  25% {
+    clip: rect(21px, 9999px, 5px, 0);
+    transform: skew(0.96deg);
+  }
+
+  30% {
+    clip: rect(87px, 9999px, 94px, 0);
+    transform: skew(0.36deg);
+  }
+
+  35% {
+    clip: rect(2px, 9999px, 12px, 0);
+    transform: skew(0.72deg);
+  }
+
+  40% {
+    clip: rect(65px, 9999px, 26px, 0);
+    transform: skew(0.04deg);
+  }
+
+  45% {
+    clip: rect(44px, 9999px, 55px, 0);
+    transform: skew(0.68deg);
+  }
+
+  50% {
+    clip: rect(82px, 9999px, 7px, 0);
+    transform: skew(0.55deg);
+  }
+
+  55% {
+    clip: rect(15px, 9999px, 86px, 0);
+    transform: skew(0.24deg);
+  }
+
+  60% {
+    clip: rect(39px, 9999px, 49px, 0);
+    transform: skew(0.78deg);
+  }
+
+  65% {
+    clip: rect(76px, 9999px, 19px, 0);
+    transform: skew(0.92deg);
+  }
+
+  70% {
+    clip: rect(58px, 9999px, 63px, 0);
+    transform: skew(0.41deg);
+  }
+
+  75% {
+    clip: rect(24px, 9999px, 91px, 0);
+    transform: skew(0.17deg);
+  }
+
+  80% {
+    clip: rect(96px, 9999px, 3px, 0);
+    transform: skew(0.63deg);
+  }
+
+  85% {
+    clip: rect(33px, 9999px, 72px, 0);
+    transform: skew(0.29deg);
+  }
+
+  90% {
+    clip: rect(5px, 9999px, 45px, 0);
+    transform: skew(0.88deg);
+  }
+
+  95% {
+    clip: rect(61px, 9999px, 28px, 0);
+    transform: skew(0.52deg);
+  }
+
+  100% {
+    clip: rect(89px, 9999px, 14px, 0);
+    transform: skew(0.33deg);
+  }
+}
+
+@keyframes glitch-anim2 {
+  0% {
+    clip: rect(65px, 9999px, 100px, 0);
+  }
+
+  25% {
+    clip: rect(22px, 9999px, 12px, 0);
+  }
+
+  50% {
+    clip: rect(5px, 9999px, 85px, 0);
+  }
+
+  75% {
+    clip: rect(98px, 9999px, 43px, 0);
+  }
+
+  100% {
+    clip: rect(15px, 9999px, 66px, 0);
+  }
+}
+
+/* ============================
+   DIGITAL HYPERSPACE REDIRECT
+============================ */
+#redirect-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10005;
+  /* Supreme z-index */
+  overflow: hidden;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+/* Warp Tunnel Effect */
+.warp-tunnel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  transform: translate(-50%, -50%);
+  background: repeating-radial-gradient(circle,
+      rgba(0, 255, 157, 0) 0%,
+      rgba(0, 255, 157, 0.1) 10%,
+      rgba(0, 255, 157, 0.4) 20%,
+      rgba(0, 0, 0, 0) 30%);
+  border-radius: 50%;
+  animation: warpSpeed 2s linear infinite;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.warp-tunnel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-radial-gradient(circle,
+      rgba(255, 0, 60, 0) 0%,
+      rgba(255, 0, 60, 0.1) 15%,
+      rgba(255, 0, 60, 0.3) 25%,
+      rgba(0, 0, 0, 0) 35%);
+  animation: warpSpeed 3s linear infinite reverse;
+}
+
+@keyframes warpSpeed {
+  0% {
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Scanlines */
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      rgba(0, 255, 0, 0.05),
+      rgba(0, 255, 0, 0.1) 50%,
+      rgba(0, 0, 0, 0.2) 50%,
+      rgba(0, 0, 0, 0.5));
+  background-size: 100% 4px;
+  animation: scanlineScroll 0.2s linear infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes scanlineScroll {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 0 100%;
+  }
+}
+
+/* Glitch Text */
+.redirect-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
+.glitch-text {
+  font-family: "Orbitron", sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 10px;
+  text-transform: uppercase;
+  position: relative;
+  text-shadow: 2px 2px #ff003c, -2px -2px #00ff9d;
+  animation: glitchSkew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite both;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff003c;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -2px 0 #00ff9d;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitchSkew {
+  0% {
+    transform: skew(0deg);
+  }
+
+  20% {
+    transform: skew(-10deg);
+  }
+
+  40% {
+    transform: skew(10deg);
+  }
+
+  60% {
+    transform: skew(-5deg);
+  }
+
+  80% {
+    transform: skew(5deg);
+  }
+
+  100% {
+    transform: skew(0deg);
+  }
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================
+   RESUME SESSION STYLES
+============================ */
+#login-page .operatives-section {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 500px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+#login-page .operatives-section.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+/* ============================
+   TEAM STATUS & LOGIC
+============================ */
+.team-status-indicator {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  transform: none;
+  margin-top: 12px;
+  color: #00ff9d;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 14px;
+  text-shadow: 0 0 10px #00ff9d;
+  text-align: right;
+  pointer-events: none;
+  opacity: 0;
+  animation: slideInStatus 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseGreen 2s infinite alternate;
+  white-space: nowrap;
+}
+
+.team-status-indicator.available {
+  color: #00e5ff;
+  text-shadow: 0 0 10px #00e5ff;
+  animation: slideInStatus 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseCyan 2s infinite alternate;
+}
+
+@keyframes slideInStatus {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseCyan {
+  from {
+    opacity: 0.6;
+    text-shadow: 0 0 5px #00e5ff;
+  }
+
+  to {
+    opacity: 1;
+    text-shadow: 0 0 15px #00e5ff;
+  }
+}
+
+.deploy-btn.resume-mode {
+  background: linear-gradient(45deg, #00ff9d, #00cc7a);
+  border-color: #00ff9d;
+  color: #000;
+  box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+}
+
+.deploy-btn.resume-mode:hover {
+  box-shadow: 0 0 50px rgba(0, 255, 157, 0.6);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.team-input.found {
+  border-color: #00ff9d !important;
+  color: #00ff9d;
+}
