@@ -16,7 +16,7 @@ POST http://localhost:5000/api/admin/deadlock/team
 Content-Type: application/json
 
 {
-  "name": "Team W2",
+  "name": "Test 2",
   "members": ["J", "K", "L"]
 }
 ###
@@ -24,8 +24,8 @@ POST http://localhost:5000/api/admin/deadlock/match
 Content-Type: application/json
 
 {
-  "teamA": "6983c46674f46d9b6fac6a24",
-  "teamB": "6983c47c74f46d9b6fac6a26"
+  "teamA": "69895aa8ed33550ee634c091",
+  "teamB": "69895ac7ed33550ee634c093"
 }
 
 ###
@@ -61,6 +61,46 @@ Content-Type: application/json
   "solvingTeamId": "6983c46674f46d9b6fac6a24"
 }
 
+###
+
+POST http://localhost:5000/api/public/deadlock/submit
+Content-Type: application/json
+
+{
+  "matchId": "69899724a5cdbcd1503a8662",
+  "teamId": "69899724a5cdbcd1503a865d",
+  "questionId": "6698967c8e44e2d323aca97ba",
+  "answer": "42"
+}
+
+
+### Seed Deadlock (DEV)
+POST http://localhost:5000/api/dev/deadlock
+Content-Type: application/json
+
+
+@matchId = Y69899724a5cdbcd1503a8662
+@teamId = 69899724a5cdbcd1503a865d
+@questionId = 6698967c8e44e2d323aca97ba"
+
+### Submit Deadlock Solution (Python example)
+POST http://localhost:5000/api/public/deadlock/submit
+Content-Type: application/json
+
+{
+  "matchId": "{{matchId}}",
+  "teamId": "{{teamId}}",
+  "questionId": "{{questionId}}",
+  "language": "python",
+  "code": "a, b = map(int, input().split())\nprint(a * b)"
+}
+
+###
+
+@matchId = 698996c7a5cdbcd1503a8653
+
+### Get Deadlock Match by ID
+GET http://localhost:5000/api/public/deadlock/match/{{matchId}}
 
 
 

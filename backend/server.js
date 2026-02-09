@@ -6,6 +6,8 @@ const cors = require("cors");
 //--------------------------------Import Routes--------------------------------
 const crackCodeRoutes = require("./routes/admin/crackCode.route");
 const deadlockAdminRoutes = require("./routes/admin/admin.route");
+const codeRoutes = require("./routes/public/code.route");
+const deadlockRoute = require("./routes/public/deadlock.routes");
 
 
 const app = express();
@@ -21,10 +23,15 @@ app.get("/", (req, res) => {
 });
 
 // --------------------------------Routes--------------------------------
+app.use("/api/public/deadlock", deadlockRoute);
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
 app.use("/api/admin/crack-code", crackCodeRoutes);
-const codeRoutes = require("./routes/public/code.route");
 app.use("/api/public/code", codeRoutes);
+
+//-------------------------------Dev Route -------------------------------------
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api/dev", require("./routes/dev/devSeed.routes"));
+}
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
