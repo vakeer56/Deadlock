@@ -13,19 +13,19 @@ const CrackCodeSession = require("../../model/CrackCodeSession");
 router.post("/start", async (req, res) => {
   try {
 
-    // Fetch all active teams
-    const teams = await Team.find({ currentRound: 'crack-the-code' });
+    // Fetch ONLY teams that won their Deadlock matches
+    const teams = await Team.find({ deadlockResult: { $in: ['win', 'winner'] } });
 
     if (teams.length === 0) {
       return res.status(400).json({
-        message: "No active teams found",
+        message: "STALEMATE DETECTED: No winning teams eligible for decryption.",
       });
     }
     const alreadyStarted = await CrackCodeSession.findOne();
     if (alreadyStarted) {
-        return res.status(400).json({
-            message: "Crack the Code game already started",
-        });
+      return res.status(400).json({
+        message: "Crack the Code game already started",
+      });
     }
     // Create CrackCodeSession for each team
     for (const team of teams) {
@@ -46,6 +46,25 @@ router.post("/start", async (req, res) => {
     return res.status(500).json({
       message: "Internal server error while starting Crack the Code",
       error: error.message,
+    });
+  }
+});
+
+/*
+  DELETE /admin/crack-code/reset
+  
+  - Admin clears all active Crack the Code sessions
+*/
+router.delete("/reset", async (req, res) => {
+  try {
+    await CrackCodeSession.deleteMany({});
+    return res.json({
+      message: "All Crack the Code sessions have been purged. Systems reset.",
+    });
+  } catch (error) {
+    console.error("CrackCode RESET error:", error);
+    return res.status(500).json({
+      message: "Internal server error while resetting sessions",
     });
   }
 });

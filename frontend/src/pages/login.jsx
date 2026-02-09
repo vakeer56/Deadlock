@@ -44,6 +44,10 @@ const Deadlock = () => {
   // Notification State
   const [notification, setNotification] = useState(null);
 
+  useEffect(() => {
+    document.title = "Deadlock // Login";
+  }, []);
+
   // Check Team Existence
   useEffect(() => {
     const checkTeam = async () => {

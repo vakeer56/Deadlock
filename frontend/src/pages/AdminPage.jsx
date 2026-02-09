@@ -24,6 +24,7 @@ const AdminPage = () => {
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
+        document.title = "Deadlock // Admin";
         const fetchTeams = async () => {
             try {
                 setLoading(true);
