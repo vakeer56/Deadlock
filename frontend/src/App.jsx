@@ -10,8 +10,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AdminPage />} />
-        <Route path="/login" element={<Deadlock />} />
+        <Route path="/" element={<Deadlock />} />
+        <Route path="/admin/deadlock" element={<AdminPage />} />
         <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
         <Route path="/crackTheCode" element={<CrackTheCode />} />
         <Route path="/admin/crack-code" element={<CrackCodeAdmin />} />
