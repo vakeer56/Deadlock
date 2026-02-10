@@ -24,17 +24,17 @@ POST http://localhost:5000/api/admin/deadlock/match
 Content-Type: application/json
 
 {
-  "teamA": "69895aa8ed33550ee634c091",
-  "teamB": "69895ac7ed33550ee634c093"
+  "teamA": "698a6484299bdedb54465093",
+  "teamB": "698a645f299bdedb54465091"
 }
 
 ###
-PATCH http://localhost:5000/api/admin/deadlock/match/6983c50374f46d9b6fac6a2c/teams
+PATCH http://localhost:5000/api/admin/deadlock/match/698a64ef299bdedb5446509e/teams
 Content-Type: application/json
 
 {
-  "teamA": "6983c46674f46d9b6fac6a24",
-  "teamB": "6983c47c74f46d9b6fac6a26"
+  "teamA": "698a6484299bdedb54465093",
+  "teamB": "698a645f299bdedb54465091"
 }
 
 ### 
@@ -57,8 +57,8 @@ POST http://localhost:5000/api/admin/deadlock/solve
 Content-Type: application/json
 
 {
-  "matchId": "6983c50374f46d9b6fac6a2c",
-  "solvingTeamId": "6983c46674f46d9b6fac6a24"
+  "matchId": "698a64ef299bdedb5446509e",
+  "solvingTeamId": "698a6484299bdedb54465093"
 }
 
 ###

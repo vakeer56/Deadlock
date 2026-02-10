@@ -1,0 +1,295 @@
+/* Deadlock Theme */
+:root {
+  --deadlock-bg: #0a0a0a;
+  --deadlock-panel-bg: #141414;
+  --deadlock-text: #e0e0e0;
+  --deadlock-accent: #ff4757;
+  --deadlock-team-a: #3742fa;
+  /* Blue */
+  --deadlock-team-b: #ff4757;
+  /* Red */
+  --deadlock-rope: #ffd32a;
+  --deadlock-success: #2ed573;
+  --deadlock-warning: #ffa502;
+}
+
+.deadlock-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--deadlock-bg);
+  color: var(--deadlock-text);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+/* Header */
+.deadlock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--deadlock-panel-bg);
+  border-bottom: 2px solid #333;
+}
+
+.team-badge {
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  min-width: 150px;
+  text-align: center;
+}
+
+.team-a {
+  color: var(--deadlock-team-a);
+  border: 1px solid var(--deadlock-team-a);
+}
+
+.team-b {
+  color: var(--deadlock-team-b);
+  border: 1px solid var(--deadlock-team-b);
+}
+
+.team-badge.winner {
+  background-color: var(--deadlock-success);
+  color: black;
+  border-color: var(--deadlock-success);
+}
+
+.match-status {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.status-live {
+  color: var(--deadlock-success);
+  animation: pulse 2s infinite;
+}
+
+.status-finished {
+  color: var(--deadlock-text);
+  opacity: 0.7;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Tug of War Arena */
+.tug-of-war-arena {
+  flex: 0 0 150px;
+  width: 100%;
+  /* Fixed height for arena */
+  position: relative;
+  background: repeating-linear-gradient(90deg,
+      #1a1a1a,
+      #1a1a1a 49px,
+      #222 50px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid #333;
+  overflow: hidden;
+}
+
+.arena-center-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #555;
+  z-index: 0;
+}
+
+/* Rope */
+.rope-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* We will use transform to move it */
+  transform: translate(-50%, -50%);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.rope-line {
+  height: 12px;
+  background-color: var(--deadlock-rope);
+  width: 200px;
+  /* Visual length of rope center */
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(255, 211, 42, 0.8);
+}
+
+.rope-marker {
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 15px white;
+}
+
+/* Lower Section */
+.game-lower-section {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Question Panel */
+.question-panel {
+  flex: 0 0 40%;
+  padding: 2rem;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+  background-color: var(--deadlock-panel-bg);
+}
+
+.question-title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--deadlock-rope);
+}
+
+.question-desc {
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  white-space: pre-wrap;
+}
+
+.example-box {
+  background-color: #222;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-family: monospace;
+}
+
+/* Editor Section */
+.editor-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.code-panel {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.submission-panel {
+  padding: 1rem;
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.submit-btn {
+  padding: 0.8rem 2rem;
+  background-color: var(--deadlock-success);
+  color: black;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.1s;
+}
+
+.submit-btn:hover {
+  transform: scale(1.05);
+}
+
+.submit-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Result Overlay */
+.result-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+.result-card {
+  background-color: #222;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 300px;
+  border: 2px solid #444;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.verdict-AC {
+  color: var(--deadlock-success);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.verdict-WA {
+  color: var(--deadlock-team-b);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.verdict-RE {
+  color: var(--deadlock-warning);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.verdict-CONFLICT {
+  color: var(--deadlock-warning);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

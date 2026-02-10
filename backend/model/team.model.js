@@ -27,7 +27,19 @@ const teamSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'win', 'lose'],
         default: 'pending'
-    }
+    },
+    currentQuestionIndex: {
+    type: Number,
+    default: 0
+},
+
+    questions: [
+        {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DeadlockQuestion"
+        }
+]
+
 
 }, {
     timestamps: true

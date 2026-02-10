@@ -13,7 +13,7 @@ const deadlockMatchSchema = new mongoose.Schema({
     },
     tugPosition: {
         type: Number,
-        default: 0   
+        default: 0
     },
     maxPull: {
         type: Number,
@@ -24,16 +24,25 @@ const deadlockMatchSchema = new mongoose.Schema({
         enum: ['lobby', 'ongoing', 'finished'],
         default: 'lobby'
     },
+    questions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'DeadlockQuestion'
+    }],
+    currentQuestionIndex: {
+        type: Number,
+        default: 0
+    },
     winner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team',
         default: null
     },
     loser: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
-    default: null
-}
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        default: null
+    }
+
 
 }, { timestamps: true });
 
