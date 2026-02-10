@@ -10,10 +10,6 @@ const crackCodeSessionSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    maxAttempts: {
-        type: Number,
-        default: 50,
-    },
     startedAt: {
         type: Date,
         default: Date.now,
