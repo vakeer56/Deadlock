@@ -163,6 +163,33 @@ const Deadlock = () => {
       return;
     }
 
+    if (!isResumeMode && members.some(m => !m)) {
+      showErrorMsg("ALL FIELDS ARE REQUIRED");
+      return;
+    }
+
+    // RESUME SESSION
+    if (isResumeMode) {
+      try {
+        // Re-fetch team details to be sure (or just trust the check)
+        const response = await axios.post("http://localhost:5000/api/admin/deadlock/team/check", { name: teamName });
+        if (response.data.success && response.data.exists) {
+          setShowSuccess(true);
+          localStorage.setItem("teamId", response.data.team._id);
+          setTimeout(() => {
+            navigate("/crackTheCode");
+          }, 2000);
+        } else {
+          showErrorMsg("TEAM NOT FOUND");
+          setIsResumeMode(false);
+        }
+      } catch (e) {
+        showErrorMsg("RESUME FAILED");
+      }
+      return;
+    }
+
+    // NEW DEPLOYMENT
     const teamData = {
       name: teamName,
       members: members

@@ -20,6 +20,12 @@ const deadlockSubmissionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    language: {
+        type: String
+    },
+    verdict: {
+        type: String
+    },
     isCorrect: {
         type: Boolean
     }

@@ -10,7 +10,7 @@ exports.solveProblem = async (req, res) => {
         if (!match || match.status !== "ongoing") {
             return res.status(400).json({
                 success: false,
-                message: "Match not active"
+                message: "Match is not ongoing"
             });
         }
 

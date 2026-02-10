@@ -20,6 +20,7 @@ router.post("/match", createMatch);
 router.post("/solve", solveProblem);
 router.post("/deadlock/start-all", startAllDeadlockMatches);
 router.post("/team", createTeam);
+router.post("/team/check", checkTeam);
 
 router.get("/team/check/:name", checkTeam);
 

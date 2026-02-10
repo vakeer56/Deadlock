@@ -403,30 +403,29 @@ CHECK TEAM EXISTENCE
 ---------------------------------------------------- */
 exports.checkTeam = async (req, res) => {
     try {
-        const { name } = req.params;
+        const { name } = req.body;
 
-        // Case-insensitive search
-        const team = await Team.findOne({
-            name: { $regex: new RegExp(`^${name}$`, 'i') }
-        });
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                message: "Team name is required"
+            });
+        }
+
+        const team = await Team.findOne({ name });
 
         if (team) {
             return res.json({
                 success: true,
                 exists: true,
-                team: {
-                    _id: team._id,
-                    name: team.name,
-                    currentRound: team.currentRound
-                }
+                team
+            });
+        } else {
+            return res.json({
+                success: true,
+                exists: false
             });
         }
-
-        res.json({
-            success: true,
-            exists: false
-        });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -435,4 +434,3 @@ exports.checkTeam = async (req, res) => {
         });
     }
 };
-
