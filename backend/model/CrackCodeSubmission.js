@@ -23,6 +23,10 @@ const crackCodeSubmissionSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    finalWinner: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 module.exports = mongoose.model(

@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 
 const CrackCodeSession = require("../../model/CrackCodeSession");
+const CrackCodeSubmission = require("../../model/CrackCodeSubmission");
 const Team = require("../../model/team.model");
 
 /*
@@ -16,12 +17,9 @@ router.get("/session/:teamId", async (req, res) => {
     const { teamId } = req.params;
 
     if (!teamId || !mongoose.Types.ObjectId.isValid(teamId)) {
-      return res.status(400).json({
-        message: "Valid teamId is required",
-      });
+      return res.status(400).json({ message: "Valid teamId is required" });
     }
 
-    // Verify team eligibility
     const team = await Team.findById(teamId).select("deadlockResult");
     if (!team || !['win', 'winner'].includes(team.deadlockResult)) {
       return res.status(403).json({
@@ -29,29 +27,30 @@ router.get("/session/:teamId", async (req, res) => {
       });
     }
 
-    // Find the session for this team
     const session = await CrackCodeSession.findOne({ teamId });
-
-    // If session does not exist
     if (!session) {
-      return res.status(404).json({
-        message: "Crack Code session not started for this team",
-      });
+      return res.status(404).json({ message: "Crack Code session not started" });
     }
 
-    // 4. Send safe session data
+    // Check for existing submission
+    const submission = await CrackCodeSubmission.findOne({ teamId, crackCodeSessionId: session._id });
+
     return res.json({
       sessionId: session._id,
       attemptsUsed: session.attemptsUsed,
       maxAttempts: session.maxAttempts,
       startedAt: session.startedAt,
       endedAt: session.endedAt || null,
+      submission: submission ? {
+        isFirst: submission.finalWinner,
+        message: submission.finalWinner
+          ? "YOU WON\nYOU SUCCESSFULLY CRACKED THE CODE BY REVERSE ENGINEERING"
+          : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
+      } : null
     });
   } catch (error) {
     console.error("Fetch session error:", error);
-    return res.status(500).json({
-      message: "Internal server error while fetching session",
-    });
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -86,6 +85,60 @@ router.get("/team-status/:teamId", async (req, res) => {
     res.json(team);
   } catch (error) {
     res.status(500).json({ message: "Error fetching team status" });
+  }
+});
+
+router.post("/submit", async (req, res) => {
+  try {
+    const { teamId, sessionId, submittedLogic, isCorrect: providedIsCorrect } = req.body;
+
+    if (!teamId || !sessionId || !submittedLogic) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Default to true if not provided (to maintain backward compatibility for manual submits)
+    const isCorrect = providedIsCorrect !== undefined ? providedIsCorrect : true;
+
+    // 1. Check if CURRENT team already submitted
+    const existing = await CrackCodeSubmission.findOne({ teamId, crackCodeSessionId: sessionId });
+    if (existing) {
+      return res.json({
+        success: true,
+        isFirst: existing.finalWinner,
+        message: existing.finalWinner
+          ? "YOU WON\nYOU SUCCESSFULLY CRACKED THE CODE BY REVERSE ENGINEERING"
+          : "THANKS FOR YOUR PARTICIPATION\nYOU CRACKED THE CODE BUT A BIT SLOWER, WINNER FINALIZED ALREADY"
+      });
+    }
+
+    // 2. Check if ANY team already won
+    const globalWinner = await CrackCodeSubmission.findOne({ finalWinner: true });
+    // A team can only be a finalWinner if they are correct AND no one else has won yet
+    const isFirst = isCorrect && !globalWinner;
+
+    // 3. Create record
+    const submission = new CrackCodeSubmission({
+      teamId,
+      crackCodeSessionId: sessionId,
+      submittedLogic,
+      isCorrect,
+      finalWinner: isFirst,
+      submittedAt: new Date()
+    });
+
+    await submission.save();
+    await CrackCodeSession.findByIdAndUpdate(sessionId, { endedAt: new Date() });
+
+    return res.json({
+      success: true,
+      isFirst,
+      message: isFirst
+        ? "YOU WON\nYOU SUCCESSFULLY CRACKED THE CODE BY REVERSE ENGINEERING"
+        : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
+    });
+  } catch (error) {
+    console.error("Submission error:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 
