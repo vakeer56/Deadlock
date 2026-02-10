@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
+import CrackCodeLobby from './CrackCodeLobby';
 import './CrackTheCode.css';
 
 const LANGUAGE_VERSIONS = {
@@ -56,8 +57,10 @@ const CrackTheCode = () => {
 
     // Timer State
     const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+    const [isGameStarted, setIsGameStarted] = useState(false);
 
     useEffect(() => {
+        if (!isGameStarted) return;
         if (timeLeft <= 0) return;
 
         const timerId = setInterval(() => {
@@ -352,6 +355,20 @@ ${otherCode}
 
     const isSubmitEnabled = timeLeft <= 180; // Enabled only in last 3 mins (3 * 60)
 
+    if (!isGameStarted) {
+        return <CrackCodeLobby onGameReady={(sessionData) => {
+            if (sessionData && sessionData.startedAt) {
+                const startTime = new Date(sessionData.startedAt).getTime();
+                const now = Date.now();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                const totalDuration = 30 * 60;
+                const remaining = Math.max(0, totalDuration - elapsedSeconds);
+                setTimeLeft(remaining);
+            }
+            setIsGameStarted(true);
+        }} />;
+    }
+
     return (
         <div className="crack-page">
             <header className="main-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -363,7 +380,7 @@ ${otherCode}
                     fontSize: '2rem',
                     fontWeight: '800',
                     margin: 0
-                }}>Reverse Engineering</h1>
+                }}>Crack The Code</h1>
                 <div className="timer" style={{
                     fontSize: '1.5em',
                     fontWeight: 'bold',

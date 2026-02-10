@@ -1,652 +1,183 @@
 /* ============================
    FONT IMPORTS
 ============================ */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap");
 
 /* ============================
-   RESET
+   SCOPED CONTAINER
 ============================ */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #050505;
-  color: #ffffff;
-  font-family: "Inter", sans-serif;
-}
-
 /* ============================
-   CONTAINER (FULL PAGE)
+   SCOPED CONTAINER
 ============================ */
-.deadlock-container {
+#login-page {
+  position: relative;
+  width: 100vw;
   height: 100vh;
-  /* Force full viewport height */
-  width: 100%;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
+  background-color: #050505;
+  /* Stronger radial gradient following mouse */
+  background-image:
+    radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 215, 0, 0.15) 0%,
+      transparent 50%),
+    linear-gradient(rgba(255, 215, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 215, 0, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 50px 50px, 50px 50px;
+  color: #e0e0e0;
+  font-family: "Rajdhani", sans-serif;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Deep, immersive background */
-  background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-  background-size: cover;
-  position: relative;
-  overflow: hidden;
-  /* Ensure no scrollbars */
+  perspective: 1000px;
 }
 
-/* ============================
-   TOP HEADER
-============================ */
-.top-header {
+/* More visible animated digital rain/noise effect */
+#login-page::before {
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 30px 50px;
+  height: 100%;
+  background: repeating-linear-gradient(0deg,
+      transparent 0,
+      transparent 50px,
+      rgba(255, 215, 0, 0.05) 50px,
+      rgba(255, 215, 0, 0.05) 51px);
+  background-size: 100% 51px;
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Floating interactive particles */
+#login-page::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: rotate(20deg);
+  animation: floatingParticles 60s linear infinite;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes floatingParticles {
+  0% {
+    transform: rotate(20deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(20deg) translateY(-100px);
+  }
+}
+
+@keyframes cosmicGrid {
+  0% {
+    transform: rotateX(45deg) translateY(0);
+  }
+
+  100% {
+    transform: rotateX(45deg) translateY(-50%);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+
+  100% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+/* ============================
+   HEADER BRANDS
+============================ */
+#login-page .login-header {
+  position: absolute;
+  top: 40px;
+  width: 90%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 100;
+  z-index: 10;
 }
 
-.takshashila-logo {
-  height: 80px;
-  /* Slightly smaller to fit with text */
-  object-fit: contain;
-  /* Restoring blend mode if user wants it, otherwise just clean */
-  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
-}
-
-.logo-container {
+#login-page .brand-left,
+#login-page .brand-right {
+  font-family: "Orbitron", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.takshashila-text {
-  font-family: "Orbitron", sans-serif;
-  font-size: 1.8rem;
-  font-weight: 700;
+#login-page .brand-left {
   color: #ffd700;
-  letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-  text-transform: uppercase;
+  /* Gold */
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
 }
 
-.celestius-text {
-  font-family: "Orbitron", sans-serif;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 4px;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-  /* Gradient text effect for awesomeness */
-  background: linear-gradient(90deg, #fff, #a0c4ff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+#login-page .brand-logo {
+  height: 80px;
+  /* Increased size */
+  width: auto;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+  transition: transform 0.3s ease;
 }
 
-/* Background Elements (Optional Abstract Shapes) */
-/* Background Elements (Optional Abstract Shapes) */
-.deadlock-container::before {
-  content: '';
-  position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle, rgba(74, 14, 78, 0.3), transparent 70%);
-  filter: blur(80px);
-  z-index: 0;
-  pointer-events: none;
-  /* Prevent interference */
+#login-page .brand-logo:hover {
+  transform: scale(1.1) rotate(5deg);
 }
 
-.deadlock-container::after {
-  content: '';
-  position: absolute;
-  bottom: -10%;
-  right: -10%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle, rgba(0, 78, 146, 0.3), transparent 70%);
-  filter: blur(80px);
-  z-index: 0;
-  pointer-events: none;
-  /* Prevent interference */
-}
-
-.login-content {
-  z-index: 10;
-  /* Boost z-index to stay above blobs */
-  width: 100%;
-  max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 30px;
-  /* Reduced form 60px */
-  margin-top: 60px;
-  /* Push down from header */
+#login-page .brand-right {
+  color: #a0d8ef;
+  /* Light Blue */
+  text-shadow: 0 0 15px rgba(160, 216, 239, 0.6);
 }
 
 /* ============================
-   TITLE
+   MAIN CONTENT
 ============================ */
-.title {
-  font-family: "Orbitron", sans-serif;
-  font-size: clamp(3rem, 5vw, 5rem);
-  /* Responsive font size */
-  font-weight: 900;
-  letter-spacing: 12px;
-  color: transparent;
-  -webkit-text-stroke: 2px rgba(255, 215, 0, 0.8);
-  margin-bottom: 10px;
-  /* Reduced margin */
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-  position: relative;
-  z-index: 10;
-  /* Boost z-index */
-}
-
-/* ============================
-   TEAM NAME INPUT (HERO)
-============================ */
-/* ============================
-   TEAM NAME INPUT (HERO)
-============================ */
-.team-section {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  /* Fix alignment */
-  align-items: center;
-  position: relative;
-  margin-bottom: 20px;
-}
-
-/* ============================
-   TEAM CHECKING STATUS
-============================ */
-.checking-text {
-  font-family: "Orbitron", sans-serif;
-  color: #00c6ff;
-  font-size: 0.9rem;
-  letter-spacing: 2px;
-  margin-top: 15px;
-  min-height: 24px;
-  /* Fixed height to prevent jumps */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.pulsing {
-  animation: pulseBlue 1.5s infinite;
-}
-
-.success-text {
-  color: #00ff00;
-  text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes pulseBlue {
-  0% {
-    opacity: 0.4;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0.4;
-  }
-}
-
-.team-input-found {
-  border-bottom-color: #00ff00 !important;
-  box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2) !important;
-  color: #00ff00 !important;
-  text-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
-}
-
-/* Smooth Collapse for Members Section */
-.members-section-wrapper {
-  width: 100%;
-  overflow: hidden;
-  transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
-  max-height: 500px;
-  /* Appsrox height of members section */
-  opacity: 1;
-}
-
-.members-section-wrapper.hidden {
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
-}
-
-.team-input-large {
+#login-page .login-content {
+  z-index: 5;
   width: 100%;
   max-width: 800px;
-  background: rgba(255, 255, 255, 0.03);
-  border: none;
-  border-bottom: 2px solid rgba(255, 215, 0, 0.5);
-  font-family: "Orbitron", sans-serif;
-  font-size: 2.5rem;
-  /* Slightly smaller */
-  text-align: center;
-  padding: 10px;
-  /* Reduced padding */
-  outline: none;
-  transition: all 0.4s ease;
-  backdrop-filter: blur(5px);
-}
-
-.team-input-large:focus {
-  background: rgba(255, 255, 255, 0.06);
-  border-bottom-color: #ffd700;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  letter-spacing: 2px;
-}
-
-.team-input-large::placeholder {
-  color: rgba(255, 255, 255, 0.2);
-  font-weight: 500;
-}
-
-/* ============================
-   MEMBERS SECTION
-============================ */
-.members-section {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  /* Center the container */
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
+  animation: fadeIn 1.2s ease-out;
 }
 
-.members-title {
-  text-align: center;
-  font-family: "Orbitron", sans-serif;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 4px;
-  font-size: 1rem;
-  margin-bottom: 15px;
-  /* Reduced from 30px */
-}
-
-.members-grid {
-  display: flex;
-  /* Switched to Flex for better centering control if just 3 items */
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  /* Reduced from 30px */
-  width: 100%;
-}
-
-.member-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 15px;
-  /* Reduced padding */
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  /* Reduced gap */
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.member-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(255, 215, 0, 0.3);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.member-index {
-  font-family: "Orbitron", sans-serif;
-  font-size: 1.5rem;
-  color: rgba(255, 215, 0, 0.6);
-  font-weight: 700;
-}
-
-.member-input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 1.2rem;
-  padding: 10px;
-  outline: none;
-  font-family: "Inter", sans-serif;
-}
-
-.member-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
-
-/* ============================
-   ACTION BUTTON
-============================ */
-.action-section {
-  margin-top: 20px;
-  /* Reduced from 40px */
-}
-
-.deploy-btn-large {
-  background: transparent;
-  border: 2px solid #ffd700;
-  color: #ffd700;
-  padding: 15px 40px;
-  /* Reduced padding */
-  font-family: "Orbitron", sans-serif;
-  font-size: 1.2rem;
-  /* Slightly smaller */
-  font-weight: 700;
-  letter-spacing: 2px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  z-index: 10;
-}
-
-.deploy-btn-large::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #ffd700;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: -1;
-}
-
-.deploy-btn-large:hover::before {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-.deploy-btn-large:hover {
-  color: #000;
-  box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
-}
-
-/* ============================
-   RESPONSIVE
-============================ */
-@media (max-width: 768px) {
-  .title {
-    font-size: 48px;
-  }
-
-  .team-input-large {
-    font-size: 2rem;
-  }
-
-  .members-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .deadlock-container {
-    padding: 20px;
-  }
-}
-
-/* ============================
-   ANIMATIONS & LOADER
-============================ */
-
-/* Loader Screen */
-/* Loader Screen */
-/* Loader Screen */
-/* Loader Screen */
-/* Loader Screen */
-/* Loader Screen */
-.loader-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  opacity: 0.6;
-  filter: blur(4px);
-  pointer-events: none;
-  /* Let clicks pass through */
-}
-
-.loader-content {
-  position: absolute;
-  /* Keep it centered regardless of parent layout */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 50px;
-  text-align: center;
-  width: 100%;
-  max-width: 1000px;
-}
-
-.loader-logo-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 25px;
-  animation: fadePulse 2s infinite ease-in-out;
-}
-
-.loader-logo {
-  height: 180px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
-}
-
-.loader-takshashila-text {
-  font-family: "Orbitron", sans-serif;
-  font-size: 4rem;
-  font-weight: 800;
-  color: #ffd700;
-  letter-spacing: 10px;
-  text-transform: uppercase;
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
-  text-align: center;
-}
-
-.terminal-text {
-  font-family: 'Orbitron', monospace;
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #00c6ff;
-  letter-spacing: 4px;
-  text-shadow: 0 0 15px rgba(0, 198, 255, 0.8);
-  margin-top: 30px;
-  text-align: center;
-  width: 100%;
-}
-
-/* Progress Bar */
-.loader-progress-container {
-  width: 60%;
-  max-width: 500px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  margin-top: 20px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 0 10px rgba(0, 198, 255, 0.2);
-}
-
-.loader-progress-bar {
-  height: 100%;
-  background: #00c6ff;
-  box-shadow: 0 0 15px #00c6ff;
-  transition: width 0.04s linear;
-}
-
-.loader-progress-text {
-  font-family: "Orbitron", sans-serif;
-  font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 10px;
-  letter-spacing: 2px;
-}
-
-.cursor {
-  display: inline-block;
-  width: 12px;
-  height: 2.5rem;
-  background-color: #00c6ff;
-  animation: blink 1s infinite;
-  margin-left: 10px;
-  vertical-align: middle;
-}
-
-@keyframes fadePulse {
-
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(0.98);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
-}
-
-@keyframes pulseLogo {
-
-  0%,
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
-  }
-
-  50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
-  }
-}
-
-@keyframes blink {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0;
-  }
-}
-
-/* Entry Animations */
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-slide-down {
-  animation: slideDown 1s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-slide-up {
-  animation: slideUp 1s ease-out 0.5s forwards;
-  /* 0.5s delay */
-  opacity: 0;
-}
-
-.animate-scale-in {
-  animation: scaleIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s forwards;
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.member-card {
-  /* Existing styles... */
-  /* Add animation for staggered entry */
-  animation: fadeInUpCard 0.6s ease-out forwards;
-  opacity: 0;
-  /* Start invisible */
-  /* animation-delay is set inline in JSX */
-}
-
-/* Keyframes */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-50px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(2);
-    /* Start huge */
-    filter: blur(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes fadeInUpCard {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -658,96 +189,350 @@ body {
   }
 }
 
+#login-page .main-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 12px;
+  color: transparent;
+  -webkit-text-stroke: 2px #d4af37;
+  text-transform: uppercase;
+  margin-bottom: 60px;
+  position: relative;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
 /* ============================
-   SUCCESS OVERLAY
+   INPUT GROUPS
 ============================ */
-.success-overlay {
+/* ============================
+   INPUT GROUPS (CYBER INTERACTIVE)
+============================ */
+#login-page .cyber-input-group {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 50px;
+}
+
+#login-page .team-input {
+  width: 100%;
+  background: rgba(10, 10, 10, 0.6);
+  border: none;
+  border-bottom: 2px solid #555;
+  padding: 20px 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 24px;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 2px;
+  /* Removed uppercase transform */
+  transition: all 0.3s ease;
+  z-index: 10;
+  position: relative;
+}
+
+/* ... existing styles ... */
+
+/* ============================
+   REDIRECT OVERLAY
+============================ */
+#redirect-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.95);
-  z-index: 10000;
+  background-color: #000;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.5s ease-out forwards;
+  z-index: 10001;
+  /* Above notifications */
+  animation: fadeInOverlay 0.5s ease-out;
 }
 
-.access-granted-container {
+.redirect-content {
   text-align: center;
-  border: 4px solid #00ff00;
-  padding: 60px 100px;
-  background: rgba(0, 50, 0, 0.8);
-  box-shadow: 0 0 50px rgba(0, 255, 0, 0.4);
-  transform: scale(0.8);
-  animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  color: #00ff9d;
+  /* Success Green */
 }
 
-.access-granted-text {
+.redirect-title {
   font-family: "Orbitron", sans-serif;
-  font-size: 5rem;
-  font-weight: 900;
-  color: #00ff00;
-  letter-spacing: 12px;
-  margin: 0;
-  text-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(0, 255, 157, 0.6);
+  animation: pulseGreen 1s infinite alternate;
 }
 
-.redirect-text {
-  font-family: "Inter", sans-serif;
-  font-size: 1.5rem;
-  color: #fff;
-  margin-top: 30px;
-  letter-spacing: 2px;
-  animation: blink 1s infinite;
+.redirect-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(0, 255, 157, 0.3);
+  border-top-color: #00ff9d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 30px;
 }
 
-@keyframes successPop {
-  0% {
-    transform: scale(0.5);
+@keyframes fadeInOverlay {
+  from {
     opacity: 0;
   }
 
-  100% {
-    transform: scale(1);
+  to {
     opacity: 1;
   }
 }
 
+@keyframes pulseGreen {
+  from {
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.4);
+    opacity: 0.8;
+  }
+
+  to {
+    text-shadow: 0 0 30px rgba(0, 255, 157, 0.9);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#login-page .team-input:focus {
+  outline: none;
+  background: rgba(20, 20, 20, 0.8);
+  border-bottom-color: transparent;
+  /* Handled by bar */
+}
+
+#login-page .team-input:hover {
+  background: rgba(30, 30, 30, 0.9);
+  border-bottom-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  cursor: text;
+}
+
+/* Floating Label */
+#login-page .input-label {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #888;
+  font-family: "Orbitron", sans-serif;
+  font-size: 20px;
+  letter-spacing: 2px;
+  transition: 0.3s ease all;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Float up when focused or has content (valid) */
+#login-page .team-input:focus~.input-label,
+#login-page .team-input:valid~.input-label {
+  top: -15px;
+  font-size: 14px;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  letter-spacing: 4px;
+}
+
+/* Animated Bottom Bar */
+#login-page .input-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: #555;
+  display: block;
+}
+
+#login-page .input-bar::before,
+#login-page .input-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: #ffd700;
+  transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+#login-page .input-bar::before {
+  left: 50%;
+}
+
+#login-page .input-bar::after {
+  right: 50%;
+}
+
+/* Expand bar from center on focus */
+#login-page .team-input:focus~.input-bar::before,
+#login-page .team-input:focus~.input-bar::after {
+  width: 50%;
+}
+
+/* Highlight/Scan effect */
+#login-page .input-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+  transition: 0.5s;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#login-page .team-input:focus~.input-highlight {
+  width: 100%;
+  transition: 0.5s ease;
+}
+
 /* ============================
-   ERROR NOTIFICATION
+   OPERATIVES SECTION
 ============================ */
-.error-message-container {
+#login-page .operatives-section {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+#login-page .section-label {
+  font-family: "Orbitron", sans-serif;
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: #666;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+#login-page .operatives-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+#login-page .operative-card {
+  flex: 1;
+  min-width: 180px;
+  max-width: 220px;
+  /* Fix: Prevent 3rd item from stretching too wide */
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid #333;
+  padding: 15px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#login-page .operative-card:hover,
+#login-page .operative-card:focus-within {
+  border-color: #555;
+  background: rgba(30, 30, 30, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+#login-page .op-number {
+  font-family: "Orbitron", sans-serif;
+  font-size: 20px;
+  color: #ffd700;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+#login-page .operative-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: #bbb;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 18px;
+  width: 100%;
+  padding: 5px;
+  text-align: left;
+  box-shadow: none !important;
+  /* Override global input styles */
+}
+
+#login-page .operative-input:focus {
+  background: transparent;
+  border-bottom: 1px solid #ffd700;
+  color: #fff;
+  box-shadow: none !important;
+}
+
+#login-page .operative-input::placeholder {
+  color: #444;
+  font-family: "Rajdhani", sans-serif;
+  text-transform: none;
+}
+
+/* ============================
+   CYBER NOTIFICATION (TOAST)
+============================ */
+.cyber-notification {
   position: fixed;
   top: 30px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20000;
-  background: rgba(50, 0, 0, 0.9);
-  border: 2px solid #ff003c;
-  padding: 15px 40px;
-  box-shadow: 0 0 30px rgba(255, 0, 60, 0.4);
+  background: rgba(15, 5, 5, 0.95);
+  border: 1px solid #ff003c;
+  border-left: 4px solid #ff003c;
+  color: #ff003c;
+  padding: 20px 30px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  z-index: 10000;
+  box-shadow: 0 0 20px rgba(255, 0, 60, 0.3);
   display: flex;
   align-items: center;
-  justify-content: center;
-  animation: slideDownError 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  backdrop-filter: blur(10px);
+  gap: 15px;
+  backdrop-filter: blur(5px);
+  animation: slideInDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
-.error-text {
-  color: #ff003c;
-  font-family: "Orbitron", sans-serif;
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(255, 0, 60, 0.6);
-  margin: 0;
+.cyber-notification.success {
+  border-color: #00ff9d;
+  color: #00ff9d;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
 }
 
-@keyframes slideDownError {
+.cyber-notification::before {
+  content: "⚠";
+  font-size: 24px;
+}
+
+.cyber-notification.success::before {
+  content: "✓";
+}
+
+@keyframes slideInDown {
   from {
     transform: translate(-50%, -100px);
     opacity: 0;
@@ -757,4 +542,659 @@ body {
     transform: translate(-50%, 0);
     opacity: 1;
   }
+}
+
+/* ============================
+   DEPLOY BUTTON
+============================ */
+#login-page .deploy-btn {
+  background: transparent;
+  border: 2px solid #ffd700;
+  color: #ffd700;
+  padding: 18px 50px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+  border-radius: 4px;
+}
+
+#login-page .deploy-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  transition: 0.5s;
+}
+
+#login-page .deploy-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  transform: scale(1.02);
+}
+
+#login-page .deploy-btn:hover::before {
+  left: 100%;
+}
+
+#login-page .deploy-btn:active {
+  transform: scale(0.98);
+}
+
+/* ============================
+   RESPONSIVE
+============================ */
+@media (max-width: 768px) {
+  #login-page .main-title {
+    font-size: 50px;
+    -webkit-text-stroke: 1px #d4af37;
+  }
+
+  #login-page .login-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  #login-page .operatives-grid {
+    flex-direction: column;
+  }
+
+  #login-page .operative-card {
+    width: 100%;
+  }
+
+}
+
+/* ============================
+   CINEMATIC FULL-SCREEN LOADER
+============================ */
+#login-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #020202;
+  /* Stronger, noticeable grid with fluid motion */
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.15) 0%, transparent 70%),
+    linear-gradient(0deg, transparent 48%, rgba(255, 215, 0, 0.15) 50%, transparent 52%),
+    linear-gradient(90deg, transparent 48%, rgba(255, 215, 0, 0.15) 50%, transparent 52%);
+  background-size: 100% 100%, 80px 80px, 80px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: cyberFlow 4s linear infinite;
+  box-shadow: inset 0 0 100px #000;
+}
+
+@keyframes cyberFlow {
+  0% {
+    background-position: center, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: center, 0 80px, 80px 0;
+  }
+}
+
+.hologram-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 40px;
+  /* Removed border/box shadow for full-page feel */
+}
+
+/* Authentic Large Logo */
+.loading-logo-glow {
+  width: 250px;
+  /* Increased size */
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.4));
+  animation: breathe 4s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+  }
+
+  100% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 50px rgba(255, 215, 0, 0.8));
+  }
+}
+
+/* Cinematic Title */
+.cinematic-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 96px;
+  /* Massive Font */
+  font-weight: 900;
+  letter-spacing: 20px;
+  color: #fff;
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+  animation: textGlow 3s infinite alternate;
+}
+
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    opacity: 0.9;
+  }
+
+  100% {
+    text-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+    opacity: 1;
+  }
+}
+
+/* Text Container */
+.loading-text-container {
+  margin-top: 20px;
+}
+
+.loading-text {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 28px;
+  /* Larger Font */
+  font-weight: 600;
+  letter-spacing: 6px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+/* Authentic Progress Bar */
+.cyber-progress-container {
+  width: 60%;
+  /* Use more page width */
+  max-width: 800px;
+  height: 6px;
+  background: #111;
+  border-radius: 4px;
+  margin-top: 30px;
+  overflow: hidden;
+  box-shadow: 0 0 20px #000;
+}
+
+/* Progress Bar Fill */
+.cyber-progress-bar {
+  height: 100%;
+  background: #ffd700;
+  width: 0%;
+  box-shadow: 0 0 25px #ffd700;
+  transition: width 0.1s linear;
+}
+
+/* ============================
+   REVEAL ANIMATIONS (3D Fly-In)
+============================ */
+/* Initial state of login content */
+#login-page .login-content {
+  opacity: 0;
+  transform: perspective(1000px) translateZ(-100px) rotateX(20deg);
+  transition: opacity 1s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#login-page .login-header {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.8s ease 0.5s;
+}
+
+/* Revealed State */
+#login-page.loaded .login-content {
+  opacity: 1;
+  transform: perspective(1000px) translateZ(0) rotateX(0);
+}
+
+#login-page.loaded .login-header {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Animations */
+@keyframes spinRight {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinLeft {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes corePulse {
+  0% {
+    box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.5);
+    opacity: 0.8;
+  }
+
+  100% {
+    box-shadow: 0 0 50px 20px rgba(255, 255, 255, 0.9);
+    opacity: 1;
+  }
+}
+
+@keyframes loadingScan {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip: rect(13px, 9999px, 81px, 0);
+    transform: skew(0.81deg);
+  }
+
+  5% {
+    clip: rect(69px, 9999px, 8px, 0);
+    transform: skew(0.12deg);
+  }
+
+  10% {
+    clip: rect(31px, 9999px, 98px, 0);
+    transform: skew(0.48deg);
+  }
+
+  15% {
+    clip: rect(93px, 9999px, 34px, 0);
+    transform: skew(0.85deg);
+  }
+
+  20% {
+    clip: rect(10px, 9999px, 60px, 0);
+    transform: skew(0.14deg);
+  }
+
+  25% {
+    clip: rect(21px, 9999px, 5px, 0);
+    transform: skew(0.96deg);
+  }
+
+  30% {
+    clip: rect(87px, 9999px, 94px, 0);
+    transform: skew(0.36deg);
+  }
+
+  35% {
+    clip: rect(2px, 9999px, 12px, 0);
+    transform: skew(0.72deg);
+  }
+
+  40% {
+    clip: rect(65px, 9999px, 26px, 0);
+    transform: skew(0.04deg);
+  }
+
+  45% {
+    clip: rect(44px, 9999px, 55px, 0);
+    transform: skew(0.68deg);
+  }
+
+  50% {
+    clip: rect(82px, 9999px, 7px, 0);
+    transform: skew(0.55deg);
+  }
+
+  55% {
+    clip: rect(15px, 9999px, 86px, 0);
+    transform: skew(0.24deg);
+  }
+
+  60% {
+    clip: rect(39px, 9999px, 49px, 0);
+    transform: skew(0.78deg);
+  }
+
+  65% {
+    clip: rect(76px, 9999px, 19px, 0);
+    transform: skew(0.92deg);
+  }
+
+  70% {
+    clip: rect(58px, 9999px, 63px, 0);
+    transform: skew(0.41deg);
+  }
+
+  75% {
+    clip: rect(24px, 9999px, 91px, 0);
+    transform: skew(0.17deg);
+  }
+
+  80% {
+    clip: rect(96px, 9999px, 3px, 0);
+    transform: skew(0.63deg);
+  }
+
+  85% {
+    clip: rect(33px, 9999px, 72px, 0);
+    transform: skew(0.29deg);
+  }
+
+  90% {
+    clip: rect(5px, 9999px, 45px, 0);
+    transform: skew(0.88deg);
+  }
+
+  95% {
+    clip: rect(61px, 9999px, 28px, 0);
+    transform: skew(0.52deg);
+  }
+
+  100% {
+    clip: rect(89px, 9999px, 14px, 0);
+    transform: skew(0.33deg);
+  }
+}
+
+@keyframes glitch-anim2 {
+  0% {
+    clip: rect(65px, 9999px, 100px, 0);
+  }
+
+  25% {
+    clip: rect(22px, 9999px, 12px, 0);
+  }
+
+  50% {
+    clip: rect(5px, 9999px, 85px, 0);
+  }
+
+  75% {
+    clip: rect(98px, 9999px, 43px, 0);
+  }
+
+  100% {
+    clip: rect(15px, 9999px, 66px, 0);
+  }
+}
+
+/* ============================
+   DIGITAL HYPERSPACE REDIRECT
+============================ */
+#redirect-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10005;
+  /* Supreme z-index */
+  overflow: hidden;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+/* Warp Tunnel Effect */
+.warp-tunnel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  transform: translate(-50%, -50%);
+  background: repeating-radial-gradient(circle,
+      rgba(0, 255, 157, 0) 0%,
+      rgba(0, 255, 157, 0.1) 10%,
+      rgba(0, 255, 157, 0.4) 20%,
+      rgba(0, 0, 0, 0) 30%);
+  border-radius: 50%;
+  animation: warpSpeed 2s linear infinite;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.warp-tunnel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-radial-gradient(circle,
+      rgba(255, 0, 60, 0) 0%,
+      rgba(255, 0, 60, 0.1) 15%,
+      rgba(255, 0, 60, 0.3) 25%,
+      rgba(0, 0, 0, 0) 35%);
+  animation: warpSpeed 3s linear infinite reverse;
+}
+
+@keyframes warpSpeed {
+  0% {
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Scanlines */
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom,
+      rgba(0, 255, 0, 0.05),
+      rgba(0, 255, 0, 0.1) 50%,
+      rgba(0, 0, 0, 0.2) 50%,
+      rgba(0, 0, 0, 0.5));
+  background-size: 100% 4px;
+  animation: scanlineScroll 0.2s linear infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes scanlineScroll {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 0 100%;
+  }
+}
+
+/* Glitch Text */
+.redirect-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
+.glitch-text {
+  font-family: "Orbitron", sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 10px;
+  text-transform: uppercase;
+  position: relative;
+  text-shadow: 2px 2px #ff003c, -2px -2px #00ff9d;
+  animation: glitchSkew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite both;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff003c;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -2px 0 #00ff9d;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitchSkew {
+  0% {
+    transform: skew(0deg);
+  }
+
+  20% {
+    transform: skew(-10deg);
+  }
+
+  40% {
+    transform: skew(10deg);
+  }
+
+  60% {
+    transform: skew(-5deg);
+  }
+
+  80% {
+    transform: skew(5deg);
+  }
+
+  100% {
+    transform: skew(0deg);
+  }
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================
+   RESUME SESSION STYLES
+============================ */
+#login-page .operatives-section {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 500px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+#login-page .operatives-section.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+/* ============================
+   TEAM STATUS & LOGIC
+============================ */
+.team-status-indicator {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  transform: none;
+  margin-top: 12px;
+  color: #00ff9d;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 14px;
+  text-shadow: 0 0 10px #00ff9d;
+  text-align: right;
+  pointer-events: none;
+  opacity: 0;
+  animation: slideInStatus 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseGreen 2s infinite alternate;
+  white-space: nowrap;
+}
+
+.team-status-indicator.available {
+  color: #00e5ff;
+  text-shadow: 0 0 10px #00e5ff;
+  animation: slideInStatus 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pulseCyan 2s infinite alternate;
+}
+
+@keyframes slideInStatus {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseCyan {
+  from {
+    opacity: 0.6;
+    text-shadow: 0 0 5px #00e5ff;
+  }
+
+  to {
+    opacity: 1;
+    text-shadow: 0 0 15px #00e5ff;
+  }
+}
+
+.deploy-btn.resume-mode {
+  background: linear-gradient(45deg, #00ff9d, #00cc7a);
+  border-color: #00ff9d;
+  color: #000;
+  box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+}
+
+.deploy-btn.resume-mode:hover {
+  box-shadow: 0 0 50px rgba(0, 255, 157, 0.6);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.team-input.found {
+  border-color: #00ff9d !important;
+  color: #00ff9d;
 }

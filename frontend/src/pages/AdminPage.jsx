@@ -18,12 +18,16 @@ const AdminPage = () => {
     const [matchId, setMatchId] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const [gameStarted, setGameStarted] = useState(false);
+    const [initializationProgress, setInitializationProgress] = useState(0);
+
     const [draggedTeam, setDraggedTeam] = useState(null);
     const [sourceColumn, setSourceColumn] = useState(null);
 
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
+        document.title = "Deadlock // Admin";
         const fetchTeams = async () => {
             try {
                 setLoading(true);
@@ -41,6 +45,16 @@ const AdminPage = () => {
 
         fetchTeams();
     }, []);
+
+    // Progress bar simulation for dramatic effect
+    useEffect(() => {
+        if (gameStarted && initializationProgress < 100) {
+            const timer = setTimeout(() => {
+                setInitializationProgress(prev => Math.min(prev + (Math.random() * 15), 100));
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    }, [gameStarted, initializationProgress]);
 
     const showToast = (msg) => {
         setToast(msg);
@@ -69,23 +83,40 @@ const AdminPage = () => {
         }
     };
 
-    const handleDrop = (e, targetColumn) => {
+    const handleDrop = (e, targetColumn, targetTeam = null) => {
         e.preventDefault();
+        if (!draggedTeam) return;
 
-        if (!draggedTeam || sourceColumn === targetColumn) return;
+        // If dropping on self in same column, do nothing
+        if (sourceColumn === targetColumn && targetTeam && draggedTeam._id === targetTeam._id) return;
 
-        removeFromSource();
+        const updateList = (prev) => {
+            const filtered = prev.filter(t => t._id !== draggedTeam._id);
+            if (targetTeam) {
+                const targetIndex = filtered.findIndex(t => t._id === targetTeam._id);
+                const newList = [...filtered];
+                newList.splice(targetIndex, 0, draggedTeam); // Insert before target
+                return newList;
+            }
+            return [...filtered, draggedTeam]; // Append if no specific target team
+        };
 
         if (targetColumn === 'unassigned') {
-            setUnassignedTeams(prev => [...prev, draggedTeam]);
+            setUnassignedTeams(prev => updateList(prev));
+            if (sourceColumn === 'teamA') setTeamA(prev => prev.filter(t => t._id !== draggedTeam._id));
+            if (sourceColumn === 'teamB') setTeamB(prev => prev.filter(t => t._id !== draggedTeam._id));
         }
 
         if (targetColumn === 'teamA') {
-            setTeamA(prev => [...prev, draggedTeam]);
+            setTeamA(prev => updateList(prev));
+            if (sourceColumn === 'unassigned') setUnassignedTeams(prev => prev.filter(t => t._id !== draggedTeam._id));
+            if (sourceColumn === 'teamB') setTeamB(prev => prev.filter(t => t._id !== draggedTeam._id));
         }
 
         if (targetColumn === 'teamB') {
-            setTeamB(prev => [...prev, draggedTeam]);
+            setTeamB(prev => updateList(prev));
+            if (sourceColumn === 'unassigned') setUnassignedTeams(prev => prev.filter(t => t._id !== draggedTeam._id));
+            if (sourceColumn === 'teamA') setTeamA(prev => prev.filter(t => t._id !== draggedTeam._id));
         }
 
         setDraggedTeam(null);
@@ -117,8 +148,8 @@ const AdminPage = () => {
 
     const handleStartAll = async () => {
         try {
-            const res = await startAllMatches();
-            showToast(`Started ${res.totalMatches} matches`);
+            await startAllMatches();
+            setGameStarted(true); // Trigger the big transition
             setUnassignedTeams([]);
             setTeamA([]);
             setTeamB([]);
@@ -129,83 +160,154 @@ const AdminPage = () => {
     };
 
 
-    return (
-        <div className="admin-container">
-            {toast && <div className="toast">{toast}</div>}
+    if (gameStarted) {
+        return (
+            <div className="admin-page-root game-started">
+                <div className="admin-scanlines"></div>
+                <div className="admin-grid-overlay"></div>
 
-            <header className="admin-header">
-                <h1>DEADLOCK ADMIN</h1>
-                <div className="admin-actions">
-                    <button onClick={handleStartAll} className="btn-primary">START ALL MATCHES</button>
-                    <button onClick={handleSwap}>SWAP</button>
-                    <button onClick={handleClearBoard} style={{ color: 'red' }}>
-                        CLEAR BOARD
-                    </button>
-                </div>
-            </header>
+                <div className="initialization-overlay">
+                    <div className="init-content">
+                        <div className="tech-spinner">
+                            <div className="spinner-inner"></div>
+                            <div className="spinner-outer"></div>
+                            <div className="spinner-center">
+                                <div className="deadlock-icon">D</div>
+                            </div>
+                        </div>
 
-            <div className="board">
-                {/* UNASSIGNED */}
-                <div
-                    className="column"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, 'unassigned')}
-                >
-                    <div className="column-header">
-                        Unassigned ({unassignedTeams.length})
+                        <div className="status-container">
+                            <h2 className="glitch-text" data-text="DEADLOCK INITIATED">DEADLOCK INITIATED</h2>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar" style={{ width: `${initializationProgress}%` }}></div>
+                                <div className="progress-percentage">{Math.floor(initializationProgress)}%</div>
+                            </div>
+                            <div className="status-log">
+                                <p className={initializationProgress > 20 ? 'visible' : ''}>NEURAL LINK ESTABLISHED...</p>
+                                <p className={initializationProgress > 45 ? 'visible' : ''}>MATCH PROTOCOLS LIVE...</p>
+                                <p className={initializationProgress > 70 ? 'visible' : ''}>TERMINAL ACCESS GRANTED...</p>
+                                <p className={initializationProgress > 90 ? 'visible' : ''}>SYSTEMS STABLE. BEGINNING...</p>
+                            </div>
+                        </div>
+
+                        <button onClick={() => setGameStarted(false)} className="cyber-btn secondary return-btn">
+                            RETURN TO DASHBOARD
+                        </button>
                     </div>
-                    <div className="column-content">
-                        {loading ? "Loading..." :
-                            unassignedTeams.map(team => (
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="admin-page-root">
+            <div className="admin-scanlines"></div>
+            <div className="admin-grid-overlay"></div>
+
+            <div className="admin-container">
+                {toast && (
+                    <div className={`cyber-toast ${toast.toLowerCase().includes('failed') ? 'error' : 'success'}`}>
+                        {toast}
+                    </div>
+                )}
+
+                <header className="admin-header">
+                    <div className="header-brand">
+                        <div className="brand-accent"></div>
+                        <h1>DEADLOCK // SYSTEM ADMIN</h1>
+                    </div>
+                    <div className="admin-actions">
+                        <button
+                            onClick={handleStartAll}
+                            className="cyber-btn primary"
+                            disabled={teamA.length === 0 || teamA.length !== teamB.length}
+                        >
+                            <span className="btn-glitch"></span>
+                            INITIALIZE ALL MATCHES
+                        </button>
+                        <button
+                            onClick={handleSwap}
+                            className="cyber-btn secondary"
+                            disabled={teamA.length === 0 && teamB.length === 0}
+                        >
+                            SWAP PROTOCOL
+                        </button>
+                        <button
+                            onClick={handleClearBoard}
+                            className="cyber-btn danger"
+                            disabled={teamA.length === 0 && teamB.length === 0}
+                        >
+                            PURGE BOARD
+                        </button>
+                    </div>
+                </header>
+
+                <div className="board">
+                    {/* UNASSIGNED */}
+                    <div
+                        className="column"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, 'unassigned')}
+                    >
+                        <div className="column-header">
+                            Unassigned ({unassignedTeams.length})
+                        </div>
+                        <div className="column-content">
+                            {loading ? "Loading..." :
+                                unassignedTeams.map(team => (
+                                    <TeamCard
+                                        key={team._id}
+                                        team={team}
+                                        onDragStart={(e) =>
+                                            handleDragStart(e, team, 'unassigned')
+                                        }
+                                        onDrop={(e) => handleDrop(e, 'unassigned', team)}
+                                    />
+                                ))
+                            }
+                        </div>
+                    </div>
+
+                    {/* TEAM ALPHA */}
+                    <div
+                        className="column column-alpha"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, 'teamA')}
+                    >
+                        <div className="column-header">TEAM ALPHA</div>
+                        <div className="column-content">
+                            {teamA.map(team => (
                                 <TeamCard
                                     key={team._id}
                                     team={team}
                                     onDragStart={(e) =>
-                                        handleDragStart(e, team, 'unassigned')
+                                        handleDragStart(e, team, 'teamA')
                                     }
+                                    onDrop={(e) => handleDrop(e, 'teamA', team)}
                                 />
-                            ))
-                        }
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* TEAM A */}
-                <div
-                    className="column"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, 'teamA')}
-                >
-                    <div className="column-header">TEAM A</div>
-                    <div className="column-content">
-                        {teamA.map(team => (
-                            <TeamCard
-                                key={team._id}
-                                team={team}
-                                onDragStart={(e) =>
-                                    handleDragStart(e, team, 'teamA')
-                                }
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                {/* TEAM B */}
-                <div
-                    className="column"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, 'teamB')}
-                >
-                    <div className="column-header">TEAM B</div>
-                    <div className="column-content">
-                        {teamB.map(team => (
-                            <TeamCard
-                                key={team._id}
-                                team={team}
-                                onDragStart={(e) =>
-                                    handleDragStart(e, team, 'teamB')
-                                }
-                            />
-                        ))}
+                    {/* TEAM GAMMA */}
+                    <div
+                        className="column column-gamma"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, 'teamB')}
+                    >
+                        <div className="column-header">TEAM GAMMA</div>
+                        <div className="column-content">
+                            {teamB.map(team => (
+                                <TeamCard
+                                    key={team._id}
+                                    team={team}
+                                    onDragStart={(e) =>
+                                        handleDragStart(e, team, 'teamB')
+                                    }
+                                    onDrop={(e) => handleDrop(e, 'teamB', team)}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

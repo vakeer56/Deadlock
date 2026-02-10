@@ -5,6 +5,8 @@ const cors = require("cors");
 
 //--------------------------------Import Routes--------------------------------
 const crackCodeRoutes = require("./routes/admin/crackCode.route");
+const publicCrackCodeRoutes = require("./routes/public/crackCode.route");
+const publicDeadlockRoutes = require("./routes/public/deadlock.route");
 const deadlockAdminRoutes = require("./routes/admin/admin.route");
 const codeRoutes = require("./routes/public/code.route");
 const deadlockRoute = require("./routes/public/deadlock.routes");
@@ -26,6 +28,9 @@ app.get("/", (req, res) => {
 app.use("/api/public/deadlock", deadlockRoute);
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
 app.use("/api/admin/crack-code", crackCodeRoutes);
+app.use("/api/public/crack-code", publicCrackCodeRoutes);
+app.use("/api/public/deadlock", publicDeadlockRoutes);
+const codeRoutes = require("./routes/public/code.route");
 app.use("/api/public/code", codeRoutes);
 
 //-------------------------------Dev Route -------------------------------------

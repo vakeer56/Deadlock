@@ -22,6 +22,8 @@ router.post("/deadlock/start-all", startAllDeadlockMatches);
 router.post("/team", createTeam);
 router.post("/team/check", checkTeam);
 
+router.get("/team/check/:name", checkTeam);
+
 router.patch("/match/:id/teams", updateTeams);
 router.patch("/match/:id/swap", swapTeams);
 router.patch("/match/:id/reset", resetMatch);

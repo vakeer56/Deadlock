@@ -1,218 +1,131 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../style/login.css";
 import logo from "../assets/logo.png";
+import "../style/login.css"; // Ensure this import is here
 
-function Deadlock() {
-  const [teamName, setTeamName] = useState("");
-  const [members, setMembers] = useState(["", "", ""]);
-  const [loading, setLoading] = useState(true);
-  const [loadingText, setLoadingText] = useState("INITIALIZING UPLINK...");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [error, setError] = useState("");
-  const [progress, setProgress] = useState(0);
-  const canvasRef = useRef(null);
+// Debounce helper
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+};
+
+const Deadlock = () => {
   const navigate = useNavigate();
+  const [teamName, setTeamName] = useState("");
+  const debouncedTeamName = useDebounce(teamName, 300);
 
-  // Network Animation & Loading Logic
+  const [members, setMembers] = useState(["", "", ""]);
+  const [teamExists, setTeamExists] = useState(false);
+  const [isTeamAvailable, setIsTeamAvailable] = useState(false);
+  const [existingTeamData, setExistingTeamData] = useState(null);
+
+  // Loading State
+  const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState("INITIALIZING PROTOCOLS...");
+  const [fadeOut, setFadeOut] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Redirect State
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectStep, setRedirectStep] = useState(0);
+  const redirectMessages = [
+    "ACCESS GRANTED",
+    "ESTABLISHING UPLINK...",
+    "BREACHING FIREWALL...",
+    "WELCOME, OPERATIVE."
+  ];
+
+  // Notification State
+  const [notification, setNotification] = useState(null);
+
   useEffect(() => {
-    // 1. Text Cycle Logic (Only runs if loading)
-    if (loading) {
-      const states = [
-        "INITIALIZING UPLINK...",
-        "ESTABLISHING SECURE HANDSHAKE...",
-        "LINKING NEURAL NODES...",
-        "DEPLOYMENT SEQUENCE READY."
-      ];
-      let stateIndex = 0;
+    document.title = "Deadlock // Login";
+  }, []);
 
-      // Progress Bar Logic
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) return 100;
-          return prev + 1;
-        });
-      }, 40);
-
-      const textInterval = setInterval(() => {
-        stateIndex++;
-        if (stateIndex < states.length) {
-          setLoadingText(states[stateIndex]);
-        } else {
-          clearInterval(textInterval);
-          clearInterval(progressInterval);
-          setProgress(100);
-          setTimeout(() => setLoading(false), 800);
-        }
-      }, 1200);
-
-      return () => {
-        clearInterval(textInterval);
-        clearInterval(progressInterval);
-      };
-    }
-  }, [loading]);
-
-  // 2. Canvas Network Animation (Runs always)
+  // Check Team Existence
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let width, height;
-    let particles = [];
-    let animationFrameId;
-
-    // Mouse State
-    const mouse = { x: null, y: null, radius: 200 };
-
-    const handleMouseMove = (e) => {
-      // Disable effect if hovering over an input
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        mouse.x = null;
-        mouse.y = null;
-      } else {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-      }
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 2;
-        this.vy = (Math.random() - 0.5) * 2;
-        this.size = Math.random() * 2 + 1;
-      }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.x < 0 || this.x > width) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-
-        // Mouse Repulsion / Interaction (Optional - let's just do connection)
-        // const dx = mouse.x - this.x;
-        // const dy = mouse.y - this.y;
-        // const distance = Math.sqrt(dx*dx + dy*dy);
-        // if (distance < mouse.radius) { ... }
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = "#00c6ff"; // Cyan dots
-        ctx.fill();
-      }
-    }
-
-    const initParticles = () => {
-      particles = [];
-      const particleCount = Math.min(Math.floor(width * height / 15000), 100);
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
-    };
-
-    const resize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      initParticles(); // Re-initialize particles on resize
-    };
-    window.addEventListener("resize", resize);
-    resize(); // Initial call to set dimensions and particles
-
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Mouse Glow Effect
-      if (mouse.x != null) {
-        const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 150);
-        glow.addColorStop(0, "rgba(0, 198, 255, 0.2)");
-        glow.addColorStop(1, "rgba(0, 198, 255, 0)");
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, 150, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Draw Particles & Connections
-      particles.forEach((p, index) => {
-        p.update();
-        p.draw();
-
-        // Connect to Mouse (Stronger Interaction)
-        if (mouse.x != null) {
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 250) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 255, 255, ${1 - dist / 250})`; // Bright Cyan
-            ctx.lineWidth = 1.5;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.stroke();
-          }
-        }
-
-        // Connect to nearby particles
-        for (let j = index + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 198, 255, ${1 - dist / 150})`;
-            ctx.lineWidth = 1;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
-      });
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []); // Run once on mount
-
-  const [isResumeMode, setIsResumeMode] = useState(false);
-  const [checkingTeam, setCheckingTeam] = useState(false);
-
-  // Debounce Team Check
-  useEffect(() => {
-    const checkTeamDelay = setTimeout(async () => {
-      if (!teamName) {
-        setIsResumeMode(false);
+    const checkTeam = async () => {
+      if (!debouncedTeamName || debouncedTeamName.length < 1) {
+        setTeamExists(false);
+        setIsTeamAvailable(false);
+        setExistingTeamData(null);
         return;
       }
 
       try {
-        setCheckingTeam(true);
-        const response = await axios.post("http://localhost:5000/api/admin/deadlock/team/check", { name: teamName });
-        if (response.data.exists) {
-          setIsResumeMode(true);
-          // Auto-fill members if needed, or just keep them hidden
-        } else {
-          setIsResumeMode(false);
+        const response = await axios.get(`http://localhost:5000/api/admin/deadlock/team/check/${debouncedTeamName}`);
+
+        if (response.data.success) {
+          if (response.data.exists) {
+            setTeamExists(true);
+            setIsTeamAvailable(false);
+            setExistingTeamData(response.data.team);
+            showNotification("TEAM RECORD FOUND. RESUMING SESSION.", "success");
+          } else {
+            setTeamExists(false);
+            setIsTeamAvailable(true);
+            setExistingTeamData(null);
+          }
         }
       } catch (error) {
-        console.error("Team check failed", error);
-      } finally {
-        setCheckingTeam(false);
+        console.error("Check team error:", error);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(checkTeamDelay);
-  }, [teamName]);
+    checkTeam();
+  }, [debouncedTeamName]);
 
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const phrases = [
+      "ESTABLISHING SECURE CONNECTION...",
+      "VERIFYING BIOMETRICS...",
+      "CHECKING AUTHENTICATION...",
+      "SYNCING WITH CELESTIUS...",
+      "ACCESS GRANTED"
+    ];
+
+    let currentPhraseIndex = 0;
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setLoadingText("ACCESS GRANTED");
+          setTimeout(() => {
+            setFadeOut(true);
+            setTimeout(() => {
+              setIsLoading(false);
+              setIsLoaded(true); // Trigger reveal animations
+            }, 800);
+          }, 500);
+          return 100;
+        }
+
+        const phase = Math.floor((prev / 100) * phrases.length);
+        if (phrases[phase] && phase !== currentPhraseIndex) {
+          setLoadingText(phrases[phase]);
+          currentPhraseIndex = phase;
+        }
+
+        return prev + 1;
+      });
+    }, 40);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
+  const showNotification = (message, type = "error") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const handleMemberChange = (index, value) => {
     const updated = [...members];
@@ -220,16 +133,33 @@ function Deadlock() {
     setMembers(updated);
   };
 
-  const showErrorMsg = (msg) => {
-    setError(msg);
-    setTimeout(() => {
-      setError("");
-    }, 5000); // Disappear after 5s
+  const initRedirect = () => {
+    setIsRedirecting(true);
+
+    let step = 0;
+    const redirectInterval = setInterval(() => {
+      step++;
+      if (step >= redirectMessages.length) {
+        clearInterval(redirectInterval);
+        navigate("/crackTheCode");
+      } else {
+        setRedirectStep(step);
+      }
+    }, 1200);
   };
 
-  const deployTeam = async () => {
-    if (!teamName) {
-      showErrorMsg("TEAM NAME REQUIRED");
+  const handleSubmit = async () => {
+    // RESUME MISSION FLOW
+    if (teamExists && existingTeamData) {
+      showNotification(`WELCOME BACK, ${existingTeamData.name}`, "success");
+      localStorage.setItem("teamId", existingTeamData._id);
+      setTimeout(initRedirect, 1000);
+      return;
+    }
+
+    // CREATE TEAM FLOW
+    if (!teamName || members.some(m => !m)) {
+      showNotification("MISSING CREDENTIALS. FILL ALL FIELDS.", "error");
       return;
     }
 
@@ -269,124 +199,126 @@ function Deadlock() {
       const response = await axios.post("http://localhost:5000/api/admin/deadlock/team", teamData);
 
       if (response.data.success) {
-        // Prepare Success Animation
-        setShowSuccess(true);
-
-        // Store session
+        showNotification("DEPLOYMENT SUCCESSFUL.", "success");
         localStorage.setItem("teamId", response.data.team._id);
-
-        // Redirect after animation
-        setTimeout(() => {
-          navigate("/crackTheCode");
-        }, 3000);
+        setTimeout(initRedirect, 1000);
       }
     } catch (error) {
       console.error("Error deploying team:", error);
       if (error.response) {
-        showErrorMsg(error.response.data.message || "DEPLOYMENT FAILED");
+        showNotification(error.response.data.message || "DEPLOYMENT FAILED", "error");
       } else if (error.request) {
-        showErrorMsg("SERVER UPLINK FAILED");
+        showNotification("CONNECTION FAILURE. CHECK SERVER.", "error");
       } else {
-        showErrorMsg("UNKNOWN SYSTEM ERROR");
+        showNotification("SYSTEM ERROR. ABORTING.", "error");
       }
     }
   };
 
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    const x = Math.round((clientX / window.innerWidth) * 100);
+    const y = Math.round((clientY / window.innerHeight) * 100);
+
+    document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+    document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+  };
+
   return (
-    <div className="deadlock-container">
-      {/* Background Canvas (Persistent) */}
-      <canvas ref={canvasRef} className="loader-canvas" />
+    <div id="login-page" className={isLoaded ? "loaded" : ""} onMouseMove={handleMouseMove}>
 
-      {/* Success Overlay */}
-      {showSuccess && (
-        <div className="success-overlay">
-          <div className="access-granted-container">
-            <h1 className="access-granted-text">ACCESS GRANTED</h1>
-            <div className="redirect-text">ESTABLISHING SECURE CONNECTION...</div>
+      {/* Advanced Redirect Overlay */}
+      {isRedirecting && (
+        <div id="redirect-overlay">
+          <div className="warp-tunnel"></div>
+          <div className="scanlines"></div>
+          <div className="redirect-content">
+            <h1 className="glitch-text" data-text={redirectMessages[redirectStep]}>
+              {redirectMessages[redirectStep]}
+            </h1>
           </div>
         </div>
       )}
 
-      {/* Error Overlay */}
-      {error && (
-        <div className="error-message-container">
-          <h2 className="error-text">⚠️ {error}</h2>
+      {/* Cyber Notification */}
+      {notification && (
+        <div className={`cyber-notification ${notification.type}`}>
+          {notification.message}
         </div>
       )}
 
-      {/* Conditionally Render Content */}
-      {loading ? (
-        // LOADER CONTENT
-        <div className="loader-content">
-          <div className="loader-logo-section">
-            <img src={logo} alt="Loading Logo" className="loader-logo" />
-            <span className="loader-takshashila-text">Takshashila</span>
-          </div>
-          <div className="terminal-text">{loadingText}</div>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div id="login-loading-overlay" className={fadeOut ? "fade-out" : ""}>
+          <div className="hologram-container">
+            <img src={logo} alt="Loading Logo" className="loading-logo-glow" />
+            <h1 className="cinematic-title">DEADLOCK</h1>
 
-          {/* Progress Bar */}
-          <div className="loader-progress-container">
-            <div className="loader-progress-bar" style={{ width: `${progress}%` }}></div>
-          </div>
-          <div className="loader-progress-text">{progress}%</div>
-        </div>
-      ) : (
-        // LOGIN FORM CONTENT
-        <div className="login-content-wrapper animate-fade-in" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div className="top-header animate-slide-down">
-            <div className="logo-container">
-              <img src={logo} alt="Takshashila Logo" className="takshashila-logo" />
-              <span className="takshashila-text">Takshashila</span>
+            <div className="loading-text-container">
+              <div className="loading-text">{loadingText}</div>
             </div>
-            <div className="celestius-text">Celestius</div>
+
+            <div className="cyber-progress-container">
+              <div className="cyber-progress-bar" style={{ width: `${progress}%` }}></div>
+            </div>
           </div>
+        </div>
+      )}
 
-          <h1 className="title animate-scale-in">DEADLOCK</h1>
+      {/* Header */}
+      <div className="login-header">
+        <div className="brand-left">
+          <img src={logo} alt="Logo" className="brand-logo" />
+          <span className="brand-text">TAKSHASHILA</span>
+        </div>
+        <div className="brand-right">
+          <span className="brand-text">Celestius</span>
+        </div>
+      </div>
 
-          <div className="login-content animate-slide-up">
-            <div className="team-section">
-              <input
-                type="text"
-                className={`team-input-large ${isResumeMode ? 'team-input-found' : ''}`}
-                placeholder="ENTER TEAM NAME"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-              />
-              <div className={`checking-text ${checkingTeam ? 'pulsing' : (teamName ? 'success-text' : '')}`}>
-                {checkingTeam ? "SEARCHING DATABASE..." : (
-                  isResumeMode ? "TEAM FOUND — SESSION RESTORED" : (teamName && !isResumeMode ? "TEAM NAME IS AVAILABLE" : "")
-                )}
+      {/* Main Content with 3D Reveal */}
+      <div className="login-content">
+        <h1 className="main-title">DEADLOCK</h1>
+
+        <div className="input-group cyber-input-group">
+          <input
+            type="text"
+            className={`team-input ${teamExists ? "found" : ""}`}
+            value={teamName}
+            onChange={(e) => setTeamName(e.target.value)}
+            required
+            placeholder="ENTER TEAM NAME"
+          />
+          {/* <label className="input-label">ENTER TEAM NAME</label> */}
+          <span className="input-highlight"></span>
+          <div className="input-bar"></div>
+          {teamExists && <div className="team-status-indicator">TEAM FOUND</div>}
+          {isTeamAvailable && <div className="team-status-indicator available">TEAM NAME AVAILABLE</div>}
+        </div>
+
+        {/* Conditionally Render Operatives */}
+        <div className={`operatives-section ${teamExists ? "hidden" : "visible"}`}>
+          <div className="section-label">OPERATIVES</div>
+          <div className="operatives-grid">
+            {members.map((member, index) => (
+              <div className="operative-card" key={index}>
+                <span className="op-number">0{index + 1}</span>
+                <input
+                  type="text"
+                  className="operative-input"
+                  value={member}
+                  placeholder={`Operative ${index + 1}`}
+                  onChange={(e) => handleMemberChange(index, e.target.value)}
+                />
               </div>
-            </div>
-
-            <div className={`members-section-wrapper ${isResumeMode ? 'hidden' : ''}`}>
-              <div className="members-section">
-                <p className="members-title">OPERATIVES</p>
-                <div className="members-grid">
-                  {members.map((member, index) => (
-                    <div className="member-card" key={index} style={{ animationDelay: `${index * 0.1}s` }}>
-                      <span className="member-index">0{index + 1}</span>
-                      <input
-                        type="text"
-                        className="member-input"
-                        value={member}
-                        placeholder={`Operative ${index + 1}`}
-                        onChange={(e) => handleMemberChange(index, e.target.value)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="action-section">
-              <button className="deploy-btn-large" onClick={deployTeam}>
-                {isResumeMode ? "BEGIN WHERE YOU LEFT OFF" : "INITIALIZE DEPLOYMENT"}
-              </button>
-            </div>
+            ))}
           </div>
         </div>
-      )}
+
+        <button className={`deploy-btn ${teamExists ? "resume-mode" : ""}`} onClick={handleSubmit}>
+          {teamExists ? "RESUME MISSION" : "INITIALIZE DEPLOYMENT"}
+        </button>
+      </div>
     </div>
   );
 }

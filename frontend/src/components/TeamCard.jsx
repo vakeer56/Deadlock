@@ -1,30 +1,31 @@
 
-const TeamCard = ({ team, onDragStart, isDraggable = true }) => {
+const TeamCard = ({ team, onDragStart, onDrop, isDraggable = true }) => {
     return (
         <div
             draggable={isDraggable}
             onDragStart={(e) => onDragStart(e, team)}
-            style={{
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #333',
-                borderRadius: '8px',
-                padding: '1rem',
-                margin: '0.5rem 0',
-                cursor: isDraggable ? 'grab' : 'default',
-                color: '#e0e0e0',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                transition: 'transform 0.2s, border-color 0.2s'
-            }}
-            className="team-card"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={onDrop}
+            className={`team-card ${isDraggable ? 'draggable' : ''}`}
         >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: 0, color: '#FFCC00', fontSize: '1.2rem' }}>{team.name}</h3>
+            <div className="card-header">
+                <h3 className="team-name">{team.name}</h3>
+                <span className="team-id">#ID-{team._id.slice(-4).toUpperCase()}</span>
             </div>
-            <div style={{ fontSize: '0.9rem', color: '#888' }}>
-                Members: {team.members ? team.members.join(', ') : 'No members'}
+            <div className="members-section">
+                <div className="section-title">OPERATIVES</div>
+                <div className="members-list">
+                    {team.members && team.members.length > 0 ? (
+                        team.members.map((member, idx) => (
+                            <div key={idx} className="member-name">
+                                <span className="member-prefix">0{idx + 1}</span>
+                                {member}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="no-members">NO DATA FOUND</div>
+                    )}
+                </div>
             </div>
         </div>
     );
