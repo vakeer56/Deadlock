@@ -291,17 +291,17 @@
     background: linear-gradient(90deg, transparent, #ff003c, transparent) !important;
 }
 
-.column-gamma {
+.column-omega {
     border-color: rgba(0, 255, 65, 0.3) !important;
 }
 
-.column-gamma .column-header {
+.column-omega .column-header {
     background: rgba(0, 255, 65, 0.1);
     color: #00ff41;
     border-bottom-color: rgba(0, 255, 65, 0.4);
 }
 
-.column-gamma::before {
+.column-omega::before {
     background: linear-gradient(90deg, transparent, #00ff41, transparent) !important;
 }
 

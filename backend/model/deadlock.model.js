@@ -17,7 +17,15 @@ const deadlockMatchSchema = new mongoose.Schema({
     },
     maxPull: {
         type: Number,
-        default: 5   // win condition
+        default: 10   // win condition
+    },
+    scoreA: {
+        type: Number,
+        default: 0
+    },
+    scoreB: {
+        type: Number,
+        default: 0
     },
     status: {
         type: String,

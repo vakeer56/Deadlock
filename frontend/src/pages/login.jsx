@@ -141,7 +141,7 @@ const Deadlock = () => {
       step++;
       if (step >= redirectMessages.length) {
         clearInterval(redirectInterval);
-        navigate("/crackTheCode");
+        navigate("/deadlock/lobby");
       } else {
         setRedirectStep(step);
       }

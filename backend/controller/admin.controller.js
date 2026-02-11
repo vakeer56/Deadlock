@@ -1,5 +1,7 @@
 const DeadlockMatch = require("../model/deadlock.model");
 const Team = require("../model/team.model");
+const DeadlockQuestion = require("../model/deadlockQuestion");
+const DeadlockSubmission = require("../model/deadlockSubmission.model");
 
 /* ----------------------------------------------------
 CREATE DEADLOCK MATCH
@@ -258,6 +260,52 @@ exports.getTeam = async (req, res) => {
 };
 
 /* ----------------------------------------------------
+GET ACTIVE DEADLOCK MATCHES
+---------------------------------------------------- */
+exports.getMatches = async (req, res) => {
+    try {
+        const matches = await DeadlockMatch.find({
+            status: { $in: ["lobby", "ongoing"] }
+        })
+            .populate("teamA", "name members currentRound")
+            .populate("teamB", "name members currentRound");
+
+        res.json({
+            success: true,
+            matches
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch active matches",
+            error: err.message
+        });
+    }
+};
+
+/* ----------------------------------------------------
+PURGE ALL LOBBY/ONGOING MATCHES
+---------------------------------------------------- */
+exports.purgeMatches = async (req, res) => {
+    try {
+        await DeadlockMatch.deleteMany({});
+        await DeadlockSubmission.deleteMany({});
+        await Team.updateMany({}, { deadlockResult: 'pending' });
+
+        res.json({
+            success: true,
+            message: "All matches purged successfully (Collection truncated)"
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to purge matches",
+            error: err.message
+        });
+    }
+};
+
+/* ----------------------------------------------------
 CREATE TEAM
 ---------------------------------------------------- */
 exports.createTeam = async (req, res) => {
@@ -306,7 +354,7 @@ exports.solveProblem = async (req, res) => {
 
         match.tugPosition += 1;
 
-        if (match.tugPosition >= match.maxPull) {
+        if (Math.abs(match.tugPosition) >= match.maxPull) {
             const winner = solvingTeamId;
             const loser =
                 solvingTeamId.toString() === match.teamA.toString()
@@ -360,39 +408,104 @@ START ALL DEADLOCK MATCHES (BATCH)
 ---------------------------------------------------- */
 exports.startAllDeadlockMatches = async (req, res) => {
     try {
-        // 1. Get all eligible teams
-        const teams = await Team.find({
-            currentRound: "deadlock",
-            deadlockResult: "pending"
-        });
+        const { teamAIds, teamBIds } = req.body;
 
-        if (teams.length < 2) {
+        if (!teamAIds || !teamBIds || teamAIds.length !== teamBIds.length) {
             return res.status(400).json({
                 success: false,
-                message: "Not enough teams to start matches"
+                message: "Valid team Alpha and Team Omega pairings are required"
             });
         }
 
-        if (teams.length % 2 !== 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Odd number of teams — cannot pair evenly"
-            });
-        }
+        // --- Authoritative Question Seeding ---
+        await DeadlockQuestion.deleteMany({});
+        const questions = await DeadlockQuestion.insertMany([
+            {
+                "title": "Subtract Two Numbers",
+                "description": "Given two integers, print their difference (first minus second).",
+                "difficulty": "easy",
+                "testCases": [
+                    { "input": "10 4", "output": "6" },
+                    { "input": "7 12", "output": "-5" }
+                ]
+            },
+            {
+                "title": "Check Even or Odd",
+                "description": "Given an integer, print 'Even' if it is even, otherwise print 'Odd'.",
+                "difficulty": "easy",
+                "testCases": [
+                    { "input": "6", "output": "Even" },
+                    { "input": "9", "output": "Odd" }
+                ]
+            },
+            {
+                "title": "Sum of First N Numbers",
+                "description": "Given an integer N, print the sum of the first N natural numbers.",
+                "difficulty": "easy",
+                "testCases": [
+                    { "input": "5", "output": "15" },
+                    { "input": "10", "output": "55" }
+                ]
+            },
+            {
+                "title": "Reverse a Number",
+                "description": "Given an integer, print the reverse of the number.",
+                "difficulty": "easy",
+                "testCases": [
+                    { "input": "123", "output": "321" },
+                    { "input": "405", "output": "504" }
+                ]
+            },
+            {
+                "title": "Count Digits",
+                "description": "Given an integer, print the number of digits in it.",
+                "difficulty": "easy",
+                "testCases": [
+                    { "input": "12345", "output": "5" },
+                    { "input": "9", "output": "1" }
+                ]
+            },
+            {
+                "title": "Prime Number Check",
+                "description": "Given an integer, print 'YES' if it is prime, otherwise print 'NO'.",
+                "difficulty": "medium",
+                "testCases": [
+                    { "input": "7", "output": "YES" },
+                    { "input": "4", "output": "NO" }
+                ]
+            },
+            {
+                "title": "Palindrome String",
+                "description": "Given a string, print 'YES' if it is a palindrome, otherwise print 'NO'.",
+                "difficulty": "medium",
+                "testCases": [
+                    { "input": "racecar", "output": "YES" },
+                    { "input": "hello", "output": "NO" }
+                ]
+            }
+        ]);
+
+        const questionIds = questions.map(q => q._id);
+        console.log("DEBUG: teamAIds:", teamAIds);
+        console.log("DEBUG: teamBIds:", teamBIds);
+        console.log("DEBUG: Found Questions count:", questions.length);
+        console.log("DEBUG: Question IDs:", questionIds);
 
         const matches = [];
 
-        // 2. Pair teams & create matches
-        for (let i = 0; i < teams.length; i += 2) {
-            const teamA = teams[i];
-            const teamB = teams[i + 1];
+        // Pair teams & create matches
+        for (let i = 0; i < teamAIds.length; i++) {
+            const teamAId = teamAIds[i];
+            const teamBId = teamBIds[i];
 
             const match = await DeadlockMatch.create({
-                teamA: teamA._id,
-                teamB: teamB._id,
+                teamA: teamAId,
+                teamB: teamBId,
+                questions: questionIds,
+                currentQuestionIndex: 0,
                 tugPosition: 0,
-                maxPull: 5,
-                status: "lobby"
+                maxPull: 100,
+                status: "ongoing" // Set as ongoing by default to match devSeed flow
             });
 
             matches.push(match);
@@ -400,7 +513,7 @@ exports.startAllDeadlockMatches = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "All Deadlock matches started",
+            message: "Deadlock matches initialized successfully with questions",
             totalMatches: matches.length,
             matches
         });
@@ -408,7 +521,7 @@ exports.startAllDeadlockMatches = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             success: false,
-            message: "Failed to start all matches",
+            message: "Failed to initialize matches",
             error: err.message
         });
     }

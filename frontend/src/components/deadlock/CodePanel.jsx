@@ -15,7 +15,8 @@ const CodePanel = ({ code, setCode, language, setLanguage, isLocked }) => {
                     style={{ padding: '4px', borderRadius: '4px', background: '#333', color: 'white', border: 'none' }}
                 >
                     <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
+                    <option value="cpp">C++</option>
+                    <option value="java">Java</option>
                     {/* Add more as backend supports */}
                 </select>
                 {isLocked && <span style={{ color: '#ff4757' }}>LOCKED</span>}

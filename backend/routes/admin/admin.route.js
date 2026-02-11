@@ -9,6 +9,8 @@ const {
     swapTeams,
     finishMatch,
     getTeam,
+    getMatches,
+    purgeMatches,
     startAllDeadlockMatches,
     checkTeam
 } = require("../../controller/admin.controller.js");
@@ -30,5 +32,7 @@ router.patch("/match/:id/reset", resetMatch);
 router.patch("/match/:id/finish", finishMatch);
 
 router.get("/teams", getTeam);
+router.get("/matches", getMatches);
+router.delete("/matches", purgeMatches);
 
 module.exports = router;

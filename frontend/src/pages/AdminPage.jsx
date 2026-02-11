@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
     getTeams,
+    getMatches,
+    purgeMatches,
     createMatch,
     updateMatchTeams,
     swapMatchTeams,
@@ -28,22 +30,33 @@ const AdminPage = () => {
 
     useEffect(() => {
         document.title = "Deadlock // Admin";
-        const fetchTeams = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const data = await getTeams();
-                setUnassignedTeams(data.teams || []);
-                setTeamA([]);
-                setTeamB([]);
+                const teamsData = await getTeams();
+                setUnassignedTeams(teamsData.teams || []);
+
+                const matchesData = await getMatches();
+                const matches = matchesData.matches || [];
+
+                const loadedTeamA = [];
+                const loadedTeamB = [];
+                matches.forEach(m => {
+                    if (m.teamA) loadedTeamA.push(m.teamA);
+                    if (m.teamB) loadedTeamB.push(m.teamB);
+                });
+
+                setTeamA(loadedTeamA);
+                setTeamB(loadedTeamB);
             } catch (err) {
                 console.error(err);
-                showToast("Failed to load teams");
+                showToast("Failed to load data");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchTeams();
+        fetchData();
     }, []);
 
     // Progress bar simulation for dramatic effect
@@ -138,17 +151,26 @@ const AdminPage = () => {
         }
     };
 
-    const handleClearBoard = () => {
-        setUnassignedTeams(prev => [...prev, ...teamA, ...teamB]);
-        setTeamA([]);
-        setTeamB([]);
-        setMatchId(null);
-        showToast("Board cleared");
+    const handleClearBoard = async () => {
+        try {
+            await purgeMatches();
+            setUnassignedTeams(prev => [...prev, ...teamA, ...teamB]);
+            setTeamA([]);
+            setTeamB([]);
+            setMatchId(null);
+            showToast("Board cleared");
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to purge matches on server");
+        }
     };
 
     const handleStartAll = async () => {
         try {
-            await startAllMatches();
+            const teamAIds = teamA.map(t => t._id);
+            const teamBIds = teamB.map(t => t._id);
+
+            await startAllMatches(teamAIds, teamBIds);
             setGameStarted(true); // Trigger the big transition
             setUnassignedTeams([]);
             setTeamA([]);
@@ -289,13 +311,13 @@ const AdminPage = () => {
                         </div>
                     </div>
 
-                    {/* TEAM GAMMA */}
+                    {/* TEAM OMEGA */}
                     <div
-                        className="column column-gamma"
+                        className="column column-omega"
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, 'teamB')}
                     >
-                        <div className="column-header">TEAM GAMMA</div>
+                        <div className="column-header">TEAM OMEGA</div>
                         <div className="column-content">
                             {teamB.map(team => (
                                 <TeamCard

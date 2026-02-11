@@ -1,6 +1,7 @@
 const DeadlockMatch = require("../../model/deadlock.model");
 const DeadlockQuestion = require("../../model/deadlockQuestion");
 const DeadlockSubmission = require("../../model/deadlockSubmission.model");
+const Team = require("../../model/team.model");
 const { runCode } = require("../../utils/piston");
 
 /*
@@ -96,22 +97,34 @@ exports.submitDeadlock = async (req, res) => {
         }
 
         //Move tug
-        match.tugPosition += isTeamA ? 1 : -1;
-
-        // Advance question
-        match.currentQuestionIndex += 1;
-
-        // Prevent overflow
-        if (match.currentQuestionIndex >= match.questions.length) {
-            match.currentQuestionIndex =
-                match.questions.length - 1;
+        if (isTeamA) {
+            match.tugPosition += 1;
+            match.scoreA += 1;
+        } else {
+            match.tugPosition -= 1;
+            match.scoreB += 1;
         }
+
+        // Advance question (Looping)
+        match.currentQuestionIndex = (match.currentQuestionIndex + 1) % match.questions.length;
 
         // Win condition
         if (Math.abs(match.tugPosition) >= match.maxPull) {
             match.status = "finished";
             match.winner = teamId;
             match.loser = isTeamA ? match.teamB : match.teamA;
+
+            // Update winner team record
+            await Team.findByIdAndUpdate(match.winner, {
+                currentRound: "crack-the-code",
+                deadlockResult: "win"
+            });
+
+            // Update loser team record
+            await Team.findByIdAndUpdate(match.loser, {
+                currentRound: "eliminated",
+                deadlockResult: "lose"
+            });
         }
 
         await match.save();
@@ -120,6 +133,8 @@ exports.submitDeadlock = async (req, res) => {
             success: true,
             verdict: "AC",
             tugPosition: match.tugPosition,
+            scoreA: match.scoreA,
+            scoreB: match.scoreB,
             status: match.status,
             nextQuestionIndex: match.currentQuestionIndex
         });
@@ -140,15 +155,25 @@ exports.getMatchState = async (req, res) => {
             return res.status(404).json({ message: "Match not found" });
         }
 
+        console.log("DEBUG: Match questions found:", match.questions ? match.questions.length : "NULL");
+        console.log("DEBUG: Match currentQuestionIndex:", match.currentQuestionIndex);
+
         const currentQuestion =
             match.questions[match.currentQuestionIndex];
+
+        console.log("DEBUG: Found currentQuestion:", currentQuestion ? currentQuestion.title : "UNDEFINED");
 
         res.json({
             teamA: match.teamA,
             teamB: match.teamB,
             tugPosition: match.tugPosition,
+            scoreA: match.scoreA,
+            scoreB: match.scoreB,
+            maxPull: match.maxPull,
             status: match.status,
             winner: match.winner,
+            currentQuestionIndex: match.currentQuestionIndex,
+            totalQuestions: match.questions.length,
             currentQuestion
         });
     } catch (err) {
@@ -172,7 +197,10 @@ exports.getMatchByTeam = async (req, res) => {
         }).populate("teamA teamB", "name");
 
         if (!match) {
-            return res.status(404).json({ message: "No active match found." });
+            return res.status(200).json({
+                success: false,
+                message: "No active match found."
+            });
         }
 
         const isTeamA = match.teamA._id.toString() === teamId;
@@ -181,6 +209,7 @@ exports.getMatchByTeam = async (req, res) => {
         res.json({
             matchId: match._id,
             status: match.status,
+            team: isTeamA ? "A" : "B",
             opponentName: opponent ? opponent.name : "PENDING...",
             tugPosition: match.tugPosition,
             maxPull: match.maxPull

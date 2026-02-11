@@ -20,6 +20,26 @@ export const getTeams = async () => {
     }
 };
 
+export const getMatches = async () => {
+    try {
+        const response = await api.get('/matches');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching matches:", error);
+        throw error;
+    }
+};
+
+export const purgeMatches = async () => {
+    try {
+        const response = await api.delete('/matches');
+        return response.data;
+    } catch (error) {
+        console.error("Error purging matches:", error);
+        throw error;
+    }
+};
+
 export const createMatch = async () => {
     try {
         const response = await api.post('/match', {});
@@ -75,9 +95,9 @@ export const finishMatch = async (matchId, winnerId) => {
     }
 };
 
-export const startAllMatches = async () => {
+export const startAllMatches = async (teamAIds, teamBIds) => {
     try {
-        const response = await api.post('/deadlock/start-all');
+        const response = await api.post('/deadlock/start-all', { teamAIds, teamBIds });
         return response.data;
     } catch (error) {
         console.error("Error starting all matches:", error);

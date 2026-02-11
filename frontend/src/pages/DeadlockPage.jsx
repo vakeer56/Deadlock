@@ -10,7 +10,8 @@ import ResultOverlay from '../components/deadlock/ResultOverlay';
 import '../components/deadlock/deadlock.css';
 
 const DeadlockPage = () => {
-    const  matchId  = JSON.parse(localStorage.getItem('deadlockContext')).matchId;
+    const context = JSON.parse(localStorage.getItem('deadlockContext') || '{}');
+    const matchId = context.matchId;
     const navigate = useNavigate();
 
     // Game State
@@ -24,8 +25,51 @@ const DeadlockPage = () => {
     const [teamId, setTeamId] = useState(null); // Should be determined from context/auth
 
     // Submission State
-    const [code, setCode] = useState("// Write your code here");
+    const CODE_TEMPLATES = {
+        python: `# HOW TO READ INPUT:
+# 1. Single line of values (e.g., "6 7")
+#    a, b = map(int, input().split())
+# 2. Distinct lines
+#    a = int(input())
+#    b = int(input())
+
+# Write your code here
+`,
+        cpp: `// HOW TO READ INPUT (C++):
+#include <iostream>
+using namespace std;
+
+int main() {
+    // Example: Read two integers
+    // int a, b;
+    // cin >> a >> b;
+
+    // Write your code here
+    
+    return 0;
+}
+`,
+        java: `// HOW TO READ INPUT (Java):
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        // Example: Read two integers
+        // if (sc.hasNextInt()) {
+        //     int a = sc.nextInt();
+        //     int b = sc.nextInt();
+        // }
+
+        // Write your code here
+    }
+}
+`
+    };
+
     const [language, setLanguage] = useState("python");
+    const [code, setCode] = useState(CODE_TEMPLATES.python);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionResult, setSubmissionResult] = useState(null); // { verdict, error }
 
@@ -39,11 +83,10 @@ const DeadlockPage = () => {
             setTugPosition(data.tugPosition);
             setCurrentQuestion(data.currentQuestion);
 
-            // Auto-determine team if stored in localStorage (Dev convenience/Simple auth)
-            // In a real app, this might come from a robust auth context
-            const storedContext = JSON.parse(localStorage.getItem('deadlockContext') || '{}');
-            if (storedContext.matchId === matchId) {
-                setTeamId(storedContext.teamId);
+            // Auto-determine team from localStorage
+            const storedTeamId = localStorage.getItem('teamId');
+            if (storedTeamId) {
+                setTeamId(storedTeamId);
             }
 
             setLoading(false);
@@ -53,16 +96,26 @@ const DeadlockPage = () => {
         }
     }, [matchId]);
 
-    // Initial Load & Polling (Optional, for now just load once)
     useEffect(() => {
         fetchMatchState();
 
-        // Polling to keep tug position in sync? 
-        // For now, let's rely on actions updating state, but a real game needs polling/sockets.
-        // Adding a slow poll for sync
+        // Polling to keep tug position in sync
         const interval = setInterval(fetchMatchState, 5000);
         return () => clearInterval(interval);
     }, [fetchMatchState]);
+
+    // Update code template when language changes
+    useEffect(() => {
+        // Only update if current code is an exact match for one of the other templates 
+        // or is a solution-cleared message, to avoid overwriting user work accidentally.
+        // For simplicity in a high-speed game, we'll just check if it's "mostly" a template.
+        const otherLanguages = Object.keys(CODE_TEMPLATES).filter(l => l !== language);
+        const isDefaultTemplate = otherLanguages.some(l => code === CODE_TEMPLATES[l]) || code === "// Question Solved! Loading next...";
+
+        if (isDefaultTemplate) {
+            setCode(CODE_TEMPLATES[language]);
+        }
+    }, [language]);
 
     const handleCodeSubmit = async () => {
         if (!teamId) {
@@ -78,6 +131,7 @@ const DeadlockPage = () => {
                 matchId,
                 teamId,
                 questionId: currentQuestion._id,
+                language,
                 code
             };
 
@@ -99,8 +153,8 @@ const DeadlockPage = () => {
                         // The backend returns nextQuestionIndex, but we need the actual question object.
                         // Best to refetch to get the new question content.
                         fetchMatchState();
-                        // Reset code? Maybe keep it or reset it.
-                        setCode("// Question Solved! Loading next...");
+                        // Reset code to current language template
+                        setCode(CODE_TEMPLATES[language]);
                     }
                 } else {
                     setSubmissionResult({
@@ -134,15 +188,22 @@ const DeadlockPage = () => {
                 teamB={match.teamB}
                 status={match.status}
                 winner={match.winner}
+                userTeam={localStorage.getItem('team')}
+                scoreA={match.scoreA}
+                scoreB={match.scoreB}
             />
 
             <TugOfWarArena
                 tugPosition={tugPosition}
-                maxPull={10} // Assuming 10 or deriving from match
+                maxPull={match.maxPull || 5}
             />
 
             <div className="game-lower-section">
-                <QuestionPanel question={currentQuestion} />
+                <QuestionPanel
+                    question={currentQuestion}
+                    questionIndex={match?.currentQuestionIndex || 0}
+                    totalQuestions={match?.totalQuestions || 0}
+                />
 
                 <div className="editor-section">
                     <CodePanel

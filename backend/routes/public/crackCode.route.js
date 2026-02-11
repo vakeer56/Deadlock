@@ -21,7 +21,7 @@ router.get("/session/:teamId", async (req, res) => {
     }
 
     const team = await Team.findById(teamId).select("deadlockResult");
-    if (!team || !['win', 'winner'].includes(team.deadlockResult)) {
+    if (!team || team.deadlockResult !== 'win') {
       return res.status(403).json({
         message: "ACCESS DENIED: Team has not completed previous mission directives.",
       });
@@ -59,7 +59,7 @@ router.get("/session/:teamId", async (req, res) => {
 router.get("/eligible-teams", async (req, res) => {
   try {
     const count = await Team.countDocuments({
-      deadlockResult: { $in: ['win', 'winner'] }
+      deadlockResult: 'win'
     });
     res.json({ count });
   } catch (error) {

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './DeadlockLobby.css';
 
 const DeadlockLobby = ({ onMatchFound }) => {
+    const navigate = useNavigate();
     const [statusLoading, setStatusLoading] = useState(true);
     const [teamStatus, setTeamStatus] = useState(null);
     const [matchInfo, setMatchInfo] = useState(null);
@@ -33,14 +35,28 @@ const DeadlockLobby = ({ onMatchFound }) => {
                 const matchRes = await fetch(`http://localhost:5000/api/public/deadlock/match/team/${teamId}`);
                 if (matchRes.ok) {
                     const data = await matchRes.json();
-                    setMatchInfo(data);
-                    setStatusLoading(false);
 
-                    if (data.status === 'ongoing') {
-                        onMatchFound(data);
+                    if (data.matchId) {
+                        setMatchInfo(data);
+
+                        // Update LocalStorage per user request
+                        if (data.team) {
+                            localStorage.setItem("team", data.team);
+                        }
+                        if (data.matchId) {
+                            localStorage.setItem("deadlockContext", JSON.stringify({ matchId: data.matchId }));
+                        }
+
+                        setStatusLoading(false);
+
+                        if (data.status === 'lobby' || data.status === 'ongoing') {
+                            if (onMatchFound) onMatchFound(data);
+                            navigate("/deadlock/game");
+                        }
+                    } else {
+                        // No match yet, stay in loading/waiting state
+                        setStatusLoading(false); // Reveal the waiting UI
                     }
-                } else {
-                    setStatusLoading(false);
                 }
             } catch (error) {
                 console.error("Deadlock Polling Error:", error);
@@ -51,7 +67,7 @@ const DeadlockLobby = ({ onMatchFound }) => {
         pollDeadlockStatus();
         const intervalId = setInterval(pollDeadlockStatus, 2000);
         return () => clearInterval(intervalId);
-    }, [onMatchFound]);
+    }, [onMatchFound, navigate]);
 
     if (statusLoading) {
         return (

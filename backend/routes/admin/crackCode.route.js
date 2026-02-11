@@ -15,7 +15,7 @@ const CrackCodeAttempt = require("../../model/CrackCodeAttempt");
 router.post("/start", async (req, res) => {
   try {
     // Fetch ONLY teams that won their Deadlock matches
-    const teams = await Team.find({ deadlockResult: { $in: ['win', 'winner'] } });
+    const teams = await Team.find({ deadlockResult: 'win' });
 
     if (teams.length === 0) {
       return res.status(400).json({
