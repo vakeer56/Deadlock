@@ -53,11 +53,12 @@ const TEST_CASES = [
 // --- Memoized Cinematic Components (Defined at top to avoid TDZ) ---
 
 const HexagonGrid = React.memo(({ isFirst }) => {
-    const hexagons = React.useMemo(() => Array.from({ length: 15 }).map(() => ({
+    // Reduced from 15 to 8 for performance
+    const hexagons = React.useMemo(() => Array.from({ length: 8 }).map(() => ({
         left: `${Math.random() * 100}%`,
-        width: `${Math.random() * 50 + 20}px`,
-        delay: `${Math.random() * 10}s`,
-        duration: `${Math.random() * 5 + 7}s`,
+        width: `${Math.random() * 40 + 20}px`,
+        delay: `${Math.random() * 5}s`,
+        duration: `${Math.random() * 4 + 6}s`,
     })), []);
 
     return (
@@ -81,12 +82,13 @@ const HexagonGrid = React.memo(({ isFirst }) => {
 });
 
 const EmberField = React.memo(({ isFirst }) => {
-    const embers = React.useMemo(() => Array.from({ length: 30 }).map(() => ({
+    // Reduced from 30 to 15 for performance
+    const embers = React.useMemo(() => Array.from({ length: 12 }).map(() => ({
         left: `${Math.random() * 100}%`,
-        duration: `${Math.random() * 3 + 4}s`,
-        delay: `${Math.random() * 5}s`,
-        drift: `${(Math.random() - 0.5) * 200}px`,
-        size: `${Math.random() * 3 + 2}px`,
+        duration: `${Math.random() * 2 + 3}s`,
+        delay: `${Math.random() * 3}s`,
+        drift: `${(Math.random() - 0.5) * 150}px`,
+        size: `${Math.random() * 2 + 2}px`,
     })), []);
 
     return (
@@ -98,7 +100,7 @@ const EmberField = React.memo(({ isFirst }) => {
                     style={{
                         left: e.left,
                         background: isFirst ? '#00ff41' : '#ff9d00',
-                        filter: `blur(1px) drop-shadow(0 0 5px ${isFirst ? '#00ff41' : '#ff9d00'})`,
+                        boxShadow: `0 0 5px ${isFirst ? '#00ff41' : '#ff9d00'}`,
                         animationDuration: e.duration,
                         animationDelay: e.delay,
                         '--drift': e.drift,
@@ -112,12 +114,13 @@ const EmberField = React.memo(({ isFirst }) => {
 });
 
 const DigitalRain = React.memo(({ isFirst }) => {
+    // Reduced from 20 to 12
     const drops = React.useMemo(() => {
-        const charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()";
-        return Array.from({ length: 20 }).map(() => ({
-            duration: `${Math.random() * 2 + 1}s`,
-            delay: `${Math.random() * 2}s`,
-            content: Array.from({ length: 15 }).map(() => charset[Math.floor(Math.random() * charset.length)]).join('')
+        const charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        return Array.from({ length: 12 }).map(() => ({
+            duration: `${Math.random() * 1.5 + 1}s`,
+            delay: `${Math.random() * 1.5}s`,
+            content: Array.from({ length: 12 }).map(() => charset[Math.floor(Math.random() * charset.length)]).join('')
         }));
     }, []);
 
@@ -214,6 +217,7 @@ const CrackTheCode = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [testResults, setTestResults] = useState({});
     const [hiddenTestResult, setHiddenTestResult] = useState(null);
+    const [lastValidatedCode, setLastValidatedCode] = useState("");
 
     // --- Callback Stability Ref Pattern ---
     // This prevents high-frequency renders (keystrokes) from resetting the timer
@@ -458,12 +462,16 @@ ${otherCode}
                     const result = await executeTestCase(hiddenTestCase, language, codeMap[language]);
                     if (result.isCorrect) {
                         setHiddenTestResult("Hidden Test Case Passed!");
+                        setLastValidatedCode(codeMap[language]);
                     } else {
                         setHiddenTestResult("Hidden Test Case Failed");
                     }
                 } catch (e) {
                     setHiddenTestResult("Hidden Test Case Error");
                 }
+            } else {
+                // No hidden test case to run
+                setLastValidatedCode(codeMap[language]);
             }
         } else {
             setHiddenTestResult(null);
@@ -523,7 +531,8 @@ ${otherCode}
 
     const allVisiblePassed = TEST_CASES.filter(tc => !tc.hidden).every((_, index) => testResults[index]?.isCorrect);
     const hiddenPassed = hiddenTestResult === "Hidden Test Case Passed!";
-    const isSubmitEnabled = allVisiblePassed && hiddenPassed;
+    const codeMatchesValidated = codeMap[language] === lastValidatedCode;
+    const isSubmitEnabled = allVisiblePassed && hiddenPassed && codeMatchesValidated;
 
     if (!isGameStarted) {
         return <CrackCodeLobby onGameReady={(sessionData) => {
@@ -543,44 +552,10 @@ ${otherCode}
         }} />;
     }
 
-    const isEnding = !!submissionResult;
-
-    return (
-        <div className={`crack-page ${isEnding ? 'ending' : ''}`}>
-            <GameHeader
-                initialTime={timeLeft}
-                isGameStarted={isGameStarted}
-                submissionResult={submissionResult}
-                onExpire={handleExpire}
-            />
-
-            <div className="crack-container">
-                {/* Left Panel Memoization Block */}
-                <LeftPanel
-                    activeTestCase={activeTestCase}
-                    setActiveTestCase={setActiveTestCase}
-                    testResults={testResults}
-                    hiddenTestResult={hiddenTestResult}
-                />
-
-                {/* Right Panel - Uses stability patterns to prevent keystroke lag */}
-                <RightPanel
-                    language={language}
-                    code={codeMap[language]}
-                    isRunning={isRunning}
-                    isSubmitting={isSubmitting}
-                    isSubmitEnabled={isSubmitEnabled}
-                    activeTestCase={activeTestCase}
-                    testResults={testResults}
-                    handleLanguageChange={handleLanguageChange}
-                    handleRun={handleRun}
-                    handleSubmit={handleSubmit}
-                    handleCodeChange={handleCodeChange}
-                    handleEditorDidMount={handleEditorDidMount}
-                />
-            </div>
-
-            {submissionResult && (
+    // --- Performance Optimization: Unmount main UI on result ---
+    if (submissionResult) {
+        return (
+            <div className={`crack-page ending`}>
                 <div className={`cyber-modal-overlay ${submissionResult.isFirst ? 'winner chromatic-pulse' : 'slower'}`}>
                     <div className="neon-scanner" style={{
                         background: `linear-gradient(90deg, transparent, ${submissionResult.isFirst ? 'rgba(0, 255, 65, 0.8)' : 'rgba(255, 157, 0, 0.8)'}, transparent)`,
@@ -616,13 +591,23 @@ ${otherCode}
                         <div className="scanline"></div>
                         <div className="glitch-wrapper">
                             {submissionResult.isFirst && <div className="critical-status">// CRITICAL VICTORY //</div>}
-                            <h2 className="cyber-title glitch" data-text={submissionResult.isFirst ? "SYSTEM OVERRIDE" : "BREACH DETECTED"}>
-                                {submissionResult.isFirst ? "SYSTEM OVERRIDE" : "BREACH DETECTED"}
+                            <h2 className="cyber-title glitch" data-text={
+                                submissionResult.isFirst
+                                    ? "SYSTEM OVERRIDE"
+                                    : submissionResult.message.includes("APPRECIATED")
+                                        ? "CODE CRACKED"
+                                        : "BREACH DETECTED"
+                            }>
+                                {submissionResult.isFirst
+                                    ? "SYSTEM OVERRIDE"
+                                    : submissionResult.message.includes("APPRECIATED")
+                                        ? "CODE CRACKED"
+                                        : "BREACH DETECTED"}
                             </h2>
                         </div>
                         <p className="cyber-message">
-                            {submissionResult.message.split('\n').map((line, index) => (
-                                <span key={index} className={index === 0 ? (submissionResult.isFirst ? "winner-highlight" : "participation-highlight") : ""}>
+                            {(submissionResult?.message || "").split('\n').map((line, index) => (
+                                <span key={index} className={index === 0 ? (submissionResult?.isFirst ? "winner-highlight" : "participation-highlight") : ""}>
                                     {line}
                                     {index === 0 && <br />}
                                 </span>
@@ -633,7 +618,42 @@ ${otherCode}
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="crack-page">
+            <GameHeader
+                initialTime={timeLeft}
+                isGameStarted={isGameStarted}
+                submissionResult={submissionResult}
+                onExpire={handleExpire}
+            />
+
+            <div className="crack-container">
+                <LeftPanel
+                    activeTestCase={activeTestCase}
+                    setActiveTestCase={setActiveTestCase}
+                    testResults={testResults}
+                    hiddenTestResult={hiddenTestResult}
+                />
+
+                <RightPanel
+                    language={language}
+                    code={codeMap[language]}
+                    isRunning={isRunning}
+                    isSubmitting={isSubmitting}
+                    isSubmitEnabled={isSubmitEnabled}
+                    activeTestCase={activeTestCase}
+                    testResults={testResults}
+                    handleLanguageChange={handleLanguageChange}
+                    handleRun={handleRun}
+                    handleSubmit={handleSubmit}
+                    handleCodeChange={handleCodeChange}
+                    handleEditorDidMount={handleEditorDidMount}
+                />
+            </div>
         </div>
     );
 };
@@ -708,6 +728,29 @@ const RightPanel = React.memo(({
     activeTestCase, testResults, handleLanguageChange, handleRun,
     handleSubmit, handleCodeChange, handleEditorDidMount
 }) => {
+    // Local state for debounced editor updates
+    const [localCode, setLocalCode] = useState(code);
+
+    // Sync local code when language changes
+    useEffect(() => {
+        setLocalCode(code);
+    }, [language, code]);
+
+    // Handle high-frequency changes locally
+    const onInternalChange = (value) => {
+        setLocalCode(value);
+    };
+
+    // Debounce the global state sync
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localCode !== code) {
+                handleCodeChange(localCode);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [localCode, handleCodeChange, code]);
+
     return (
         <div className="panel right-panel">
             <div className="editor-header">
@@ -742,8 +785,8 @@ const RightPanel = React.memo(({
                     height="100%"
                     language={language === 'cpp' ? 'cpp' : language}
                     theme="vs-dark"
-                    value={code}
-                    onChange={handleCodeChange}
+                    value={localCode}
+                    onChange={onInternalChange}
                     onMount={handleEditorDidMount}
                     options={{
                         minimap: { enabled: false },

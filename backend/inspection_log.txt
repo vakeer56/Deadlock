@@ -1,8 +1,0 @@
-TEAM INSPECTION REPORT:
-[NAME: hello] [RESULT: "winner"] [ROUND: "deadlock"] [ACTIVE: true]
-[NAME: testing] [RESULT: "pending"] [ROUND: "deadlock"] [ACTIVE: true]
-[NAME: ramu team] [RESULT: "pending"] [ROUND: "deadlock"] [ACTIVE: true]
-[NAME: ramu team] [RESULT: "pending"] [ROUND: "deadlock"] [ACTIVE: true]
-[NAME: aahu] [RESULT: "pending"] [ROUND: "deadlock"] [ACTIVE: true]
-[NAME: new ah] [RESULT: "pending"] [ROUND: "deadlock"] [ACTIVE: true]
-[NAME: vde] [RESULT: "pending"] [ROUND: "deadlock"] [ACTIVE: true]

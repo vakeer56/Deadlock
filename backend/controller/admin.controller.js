@@ -81,12 +81,14 @@ exports.updateTeams = async (req, res) => {
 
         const teamAExists = await Team.findOne({
             _id: teamA,
-            currentRound: "deadlock"
+            currentRound: "deadlock",
+            deadlockResult: "pending"
         });
 
         const teamBExists = await Team.findOne({
             _id: teamB,
-            currentRound: "deadlock"
+            currentRound: "deadlock",
+            deadlockResult: "pending"
         });
 
         if (!teamAExists || !teamBExists) {
@@ -224,10 +226,23 @@ GET DEADLOCK TEAMS (ELIGIBLE ONLY)
 ---------------------------------------------------- */
 exports.getTeam = async (req, res) => {
     try {
-        // Fetch all teams currently in 'deadlock' round
+        // 1. Find all active matches to identify busy teams
+        const activeMatches = await DeadlockMatch.find({
+            status: { $in: ["lobby", "ongoing"] }
+        }).select("teamA teamB");
+
+        const busyTeamIds = activeMatches.reduce((acc, match) => {
+            if (match.teamA) acc.push(match.teamA);
+            if (match.teamB) acc.push(match.teamB);
+            return acc;
+        }, []);
+
+        // 2. Fetch teams not in active matches
         const teams = await Team.find({
-            currentRound: "deadlock"
-        }).select("name members currentRound deadlockResult");
+            currentRound: "deadlock",
+            deadlockResult: "pending",
+            _id: { $nin: busyTeamIds }
+        }).select("name members currentRound");
 
         res.json({
             success: true,
@@ -347,7 +362,8 @@ exports.startAllDeadlockMatches = async (req, res) => {
     try {
         // 1. Get all eligible teams
         const teams = await Team.find({
-            currentRound: "deadlock"
+            currentRound: "deadlock",
+            deadlockResult: "pending"
         });
 
         if (teams.length < 2) {
@@ -403,29 +419,29 @@ CHECK TEAM EXISTENCE
 ---------------------------------------------------- */
 exports.checkTeam = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name } = req.params;
 
-        if (!name) {
-            return res.status(400).json({
-                success: false,
-                message: "Team name is required"
-            });
-        }
-
-        const team = await Team.findOne({ name });
+        // Case-insensitive search
+        const team = await Team.findOne({
+            name: { $regex: new RegExp(`^${name}$`, 'i') }
+        });
 
         if (team) {
             return res.json({
                 success: true,
                 exists: true,
-                team
-            });
-        } else {
-            return res.json({
-                success: true,
-                exists: false
+                team: {
+                    _id: team._id,
+                    name: team.name,
+                    currentRound: team.currentRound
+                }
             });
         }
+
+        res.json({
+            success: true,
+            exists: false
+        });
     } catch (error) {
         res.status(500).json({
             success: false,

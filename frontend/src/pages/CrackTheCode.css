@@ -16,8 +16,8 @@
 .main-header {
     /* Glassmorphism Header */
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding: 1rem 2rem;
     display: flex;
@@ -46,9 +46,8 @@
 .panel {
     /* Glassmorphism Panels */
     background: rgba(30, 30, 40, 0.6);
-    backdrop-filter: blur(6px);
-    /* Optimized from 12px */
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     /* Curved edges */
@@ -271,11 +270,10 @@
 .console-box,
 .result-box {
     background: rgba(20, 20, 25, 0.7) !important;
-    /* Force override */
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 12px !important;
     padding: 12px !important;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(2px);
 }
 
 /* Scrollbars */
@@ -329,7 +327,7 @@
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -502,7 +500,8 @@
     height: 150vh;
     background-repeat: repeat;
     transform: translate(-50%, -50%);
-    animation: ray-spin 25s infinite linear;
+    animation: ray-spin 40s infinite linear;
+    will-change: transform;
     z-index: -3;
     pointer-events: none;
 }
@@ -552,8 +551,10 @@
     height: 4px;
     background: #00ff41;
     border-radius: 50%;
-    filter: blur(1px) drop-shadow(0 0 5px #00ff41);
+    /* Simplified filter */
+    box-shadow: 0 0 5px #00ff41;
     animation: ember-drift infinite linear;
+    will-change: transform;
 }
 
 @keyframes ember-drift {
@@ -585,12 +586,10 @@
     0%,
     100% {
         text-shadow: 2px 0 5px rgba(255, 0, 0, 0.4), -2px 0 5px rgba(0, 0, 255, 0.4);
-        filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.2));
     }
 
     50% {
         text-shadow: -3px 0 8px rgba(255, 0, 0, 0.6), 3px 0 8px rgba(0, 0, 255, 0.6);
-        filter: drop-shadow(0 0 15px rgba(0, 255, 65, 0.5));
     }
 }
 
@@ -600,12 +599,13 @@
     left: 0;
     width: 100%;
     height: 5px;
-    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.8), transparent);
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.5), transparent);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
     z-index: 100;
     pointer-events: none;
-    animation: scan-sweep 4s infinite linear;
-    opacity: 0.6;
+    animation: scan-sweep 6s infinite linear;
+    will-change: top;
+    opacity: 0.4;
 }
 
 @keyframes scan-sweep {
@@ -681,6 +681,7 @@
     writing-mode: vertical-rl;
     text-orientation: upright;
     animation: fall linear infinite;
+    will-change: transform;
 }
 
 @keyframes fall {
@@ -957,31 +958,33 @@
 
 .participation-highlight {
     display: block;
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 900;
     background: linear-gradient(180deg, #fff 0%, #ff9d00 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 10px rgba(255, 157, 0, 0.5));
-    letter-spacing: 10px;
-    margin: 0 0 1.5rem 10px;
+    text-shadow: 0 0 10px rgba(255, 157, 0, 0.5);
+    letter-spacing: 5px;
+    margin: 0 0 1rem 0;
     animation: participation-title-glow 3s infinite ease-in-out;
     text-transform: uppercase;
-    line-height: 1.3;
+    line-height: 1.2;
+    word-break: break-word;
+    /* Ensure wrapping */
 }
 
 @keyframes title-glow {
 
     0%,
     100% {
-        filter: drop-shadow(0 0 15px rgba(0, 255, 65, 0.4));
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         transform: scale(1);
     }
 
     50% {
-        filter: drop-shadow(0 0 35px rgba(0, 255, 65, 0.7));
-        transform: scale(1.03);
+        text-shadow: 0 0 20px rgba(0, 255, 65, 0.8);
+        transform: scale(1.02);
     }
 }
 
@@ -989,13 +992,13 @@
 
     0%,
     100% {
-        filter: drop-shadow(0 0 15px rgba(255, 157, 0, 0.4));
+        text-shadow: 0 0 10px rgba(255, 157, 0, 0.5);
         transform: scale(1);
     }
 
     50% {
-        filter: drop-shadow(0 0 35px rgba(255, 157, 0, 0.7));
-        transform: scale(1.03);
+        text-shadow: 0 0 20px rgba(255, 157, 0, 0.8);
+        transform: scale(1.02);
     }
 }
 
@@ -1034,8 +1037,8 @@
     max-width: 800px;
     text-align: center;
     position: relative;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     z-index: 10;
     overflow: hidden;
     animation: content-staggered-entry 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;

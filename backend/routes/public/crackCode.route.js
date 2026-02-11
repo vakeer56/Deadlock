@@ -45,7 +45,9 @@ router.get("/session/:teamId", async (req, res) => {
         isFirst: submission.finalWinner,
         message: submission.finalWinner
           ? "YOU WON\nYOU SUCCESSFULLY CRACKED THE CODE BY REVERSE ENGINEERING"
-          : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
+          : submission.isCorrect
+            ? "YOUR EFFORTS NEED TO BE APPRECIATED\nBUT SMALL TIME MANAGEMENT LACKING DECIDED SOMEOTHER AS WINNER. YOU CRACKED THE CODE..."
+            : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
       } : null
     });
   } catch (error) {
@@ -107,7 +109,9 @@ router.post("/submit", async (req, res) => {
         isFirst: existing.finalWinner,
         message: existing.finalWinner
           ? "YOU WON\nYOU SUCCESSFULLY CRACKED THE CODE BY REVERSE ENGINEERING"
-          : "THANKS FOR YOUR PARTICIPATION\nYOU CRACKED THE CODE BUT A BIT SLOWER, WINNER FINALIZED ALREADY"
+          : existing.isCorrect
+            ? "YOUR EFFORTS NEED TO BE APPRECIATED\nBUT SMALL TIME MANAGEMENT LACKING DECIDED SOMEOTHER AS WINNER. YOU CRACKED THE CODE..."
+            : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
       });
     }
 
@@ -134,7 +138,9 @@ router.post("/submit", async (req, res) => {
       isFirst,
       message: isFirst
         ? "YOU WON\nYOU SUCCESSFULLY CRACKED THE CODE BY REVERSE ENGINEERING"
-        : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
+        : isCorrect
+          ? "YOUR EFFORTS NEED TO BE APPRECIATED\nBUT SMALL TIME MANAGEMENT LACKING DECIDED SOMEOTHER AS WINNER. YOU CRACKED THE CODE..."
+          : "THANK YOU FOR PARTICIPATION\nTHE GAME HAS ENDED"
     });
   } catch (error) {
     console.error("Submission error:", error);

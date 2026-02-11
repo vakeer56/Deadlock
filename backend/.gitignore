@@ -1,2 +1,7 @@
 /node_modules
 .env
+*.log
+*.txt
+debug_*
+inspection_*
+api_response.json
