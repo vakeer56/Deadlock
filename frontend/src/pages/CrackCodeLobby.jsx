@@ -151,7 +151,7 @@ const CrackCodeLobby = ({ onGameReady }) => {
                                     <div className="rule-item">
                                         <span className="rule-nb">06</span>
                                         <div className="rule-text">
-                                            <strong>FINAL UPLOAD:</strong> Submission gate opens only in the final 180 seconds of the mission.
+                                            <strong>FINAL UPLOAD:</strong> Submission gate opens only when all test cases (including hidden) are successfully validated.
                                         </div>
                                     </div>
                                 </div>

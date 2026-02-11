@@ -80,12 +80,22 @@
     font-weight: bold;
 }
 
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #00ffff;
+    position: relative;
+    flex-shrink: 0;
+}
+
 .status-indicator.standby {
-    background: var(--admin-gold);
-    box-shadow: 0 0 10px var(--admin-gold);
+    background: var(--standby-gold);
+    box-shadow: 0 0 10px var(--standby-gold);
 }
 
 .pulse {
+    background: #00ffff !important;
     animation: statusPulse 2s infinite;
 }
 
@@ -93,19 +103,19 @@
     0% {
         transform: scale(1);
         opacity: 1;
-        box-shadow: 0 0 0 0 rgba(0, 201, 255, 0.7);
+        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7);
     }
 
     70% {
         transform: scale(1.3);
         opacity: 0.8;
-        box-shadow: 0 0 0 8px rgba(0, 201, 255, 0);
+        box-shadow: 0 0 0 8px rgba(0, 255, 255, 0);
     }
 
     100% {
         transform: scale(1);
         opacity: 1;
-        box-shadow: 0 0 0 0 rgba(0, 201, 255, 0);
+        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
     }
 }
 
@@ -154,9 +164,9 @@
 .core-inner {
     width: 60px;
     height: 60px;
-    background: radial-gradient(circle, var(--neon-blue) 0%, transparent 80%);
+    background: radial-gradient(circle, #00ffff 0%, transparent 80%);
     border-radius: 50%;
-    box-shadow: 0 0 30px rgba(0, 201, 255, 0.6);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
     animation: corePulse 1.5s ease-in-out infinite alternate;
     z-index: 5;
 }
@@ -167,15 +177,15 @@
     border-radius: 50%;
 }
 
-.ring-1 {
+.ring.ring-1 {
     width: 100px;
     height: 100px;
-    border-top: 2px solid var(--neon-blue);
-    border-bottom: 2px solid var(--neon-blue);
+    border-top: 2px solid #00ffff;
+    border-bottom: 2px solid #00ffff;
     animation: rotateRing 3s linear infinite;
 }
 
-.ring-2 {
+.ring.ring-2 {
     width: 140px;
     height: 140px;
     border-left: 2px solid var(--neon-pink);
@@ -184,10 +194,10 @@
     opacity: 0.6;
 }
 
-.ring-3 {
+.ring.ring-3 {
     width: 180px;
     height: 180px;
-    border: 1px dashed var(--neon-blue);
+    border: 1px dashed #00ffff;
     animation: rotateRing 15s linear infinite;
     opacity: 0.3;
 }
@@ -196,9 +206,9 @@
     position: absolute;
     width: 220px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+    background: linear-gradient(90deg, transparent, #00ffff, transparent);
     animation: scanning 4s linear infinite;
-    box-shadow: 0 0 15px var(--neon-blue);
+    box-shadow: 0 0 15px #00ffff;
     z-index: 10;
 }
 
@@ -459,6 +469,13 @@
     100% {
         transform: translate(0);
     }
+}
+
+.cyber-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
 }
 
 .participation-card {

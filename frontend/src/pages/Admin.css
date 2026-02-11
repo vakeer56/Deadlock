@@ -292,17 +292,17 @@
 }
 
 .column-gamma {
-    border-color: rgba(0, 255, 255, 0.3) !important;
+    border-color: rgba(0, 255, 65, 0.3) !important;
 }
 
 .column-gamma .column-header {
-    background: rgba(0, 255, 255, 0.1);
-    color: #00ffff;
-    border-bottom-color: rgba(0, 255, 255, 0.4);
+    background: rgba(0, 255, 65, 0.1);
+    color: #00ff41;
+    border-bottom-color: rgba(0, 255, 65, 0.4);
 }
 
 .column-gamma::before {
-    background: linear-gradient(90deg, transparent, #00ffff, transparent) !important;
+    background: linear-gradient(90deg, transparent, #00ff41, transparent) !important;
 }
 
 .column-header {
@@ -526,12 +526,12 @@
     width: 140px;
     height: 140px;
     border: 4px solid transparent;
-    border-left-color: #00ffff;
+    border-left-color: #00ff41;
     /* Keep Aqua inner as most recently set by user */
-    border-right-color: #00ffff;
+    border-right-color: #00ff41;
     border-radius: 50%;
     animation: rotateInner 1.5s linear infinite;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
 }
 
 .spinner-center {
@@ -604,7 +604,7 @@
     color: #fff;
     letter-spacing: 5px;
     position: relative;
-    text-shadow: 0.05em 0 0 #ff003c, -0.025em -0.05em 0 #00ffff, 0.025em 0.05em 0 #ffd700;
+    text-shadow: 0.05em 0 0 #ff003c, -0.025em -0.05em 0 #00ff41, 0.025em 0.05em 0 #ffd700;
     animation: glitch 1s infinite;
     text-align: center;
     width: 100%;
