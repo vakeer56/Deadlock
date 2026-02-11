@@ -29,7 +29,7 @@ app.use("/api/public/deadlock", deadlockRoute);
 app.use("/api/admin/deadlock", deadlockAdminRoutes);
 app.use("/api/admin/crack-code", crackCodeRoutes);
 app.use("/api/public/crack-code", publicCrackCodeRoutes);
-app.use("/api/public/deadlock", publicDeadlockRoutes);
+// app.use("/api/public/deadlock", publicDeadlockRoutes);
 app.use("/api/public/code", codeRoutes);
 
 //-------------------------------Dev Route -------------------------------------

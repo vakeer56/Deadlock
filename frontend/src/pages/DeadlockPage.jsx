@@ -10,7 +10,7 @@ import ResultOverlay from '../components/deadlock/ResultOverlay';
 import '../components/deadlock/deadlock.css';
 
 const DeadlockPage = () => {
-    const { matchId } = useParams();
+    const  matchId  = JSON.parse(localStorage.getItem('deadlockContext')).matchId;
     const navigate = useNavigate();
 
     // Game State

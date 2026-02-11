@@ -15,7 +15,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminPage />} />
         <Route path="/login" element={<Deadlock />} />
         <Route path="/crackTheCode" element={<CrackTheCode />} />
-        <Route path="/deadlock/:matchId" element={<DeadlockPage />} />
+        <Route path="/deadlock/game" element={<DeadlockPage />} />
         <Route path="/deadlock" element={<DeadlockRedirect />} />
         {/* Guardrail: Redirect any other /deadlock/* paths to Home */}
         <Route path="/deadlock/*" element={<Navigate to="/" replace />} />

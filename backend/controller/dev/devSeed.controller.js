@@ -30,7 +30,7 @@ exports.seedDeadlock = async (req, res) => {
         },
         {
             title: "Add Two Numbers",
-            description: "Given two integers, print their sum.",
+            description: "Given two integers, return their sum.",
             difficulty: "easy",
             testCases: [
             { input: "2 3", output: "5" },
@@ -39,7 +39,7 @@ exports.seedDeadlock = async (req, res) => {
         },
         {
             title: "Maximum of Two Numbers",
-            description: "Given two integers, print the maximum.",
+            description: "Given two integers, return the maximum.",
             difficulty: "easy",
             testCases: [
             { input: "5 9", output: "9" },
