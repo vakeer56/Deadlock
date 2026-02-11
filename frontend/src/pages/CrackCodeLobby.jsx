@@ -17,21 +17,21 @@ const CrackCodeLobby = ({ onGameReady }) => {
         const pollEverything = async () => {
             try {
                 // 1. Fetch Global Status
-                const globalRes = await fetch('http://localhost:5000/api/public/crack-code/global-status');
+                const globalRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/global-status`);
                 if (globalRes.ok) {
                     const data = await globalRes.json();
                     setGlobalStarted(data.started);
                 }
 
                 // 2. Fetch Team Status
-                const teamRes = await fetch(`http://localhost:5000/api/public/crack-code/team-status/${teamId}`);
+                const teamRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/team-status/${teamId}`);
                 if (teamRes.ok) {
                     const data = await teamRes.json();
                     setTeamStatus(data);
                 }
 
                 // 3. Check Session Eligibility and Transition
-                const sessionRes = await fetch(`http://localhost:5000/api/public/crack-code/session/${teamId}`);
+                const sessionRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/session/${teamId}`);
                 if (sessionRes.ok) {
                     const data = await sessionRes.json();
                     onGameReady(data);

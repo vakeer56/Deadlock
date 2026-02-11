@@ -382,7 +382,7 @@ ${otherCode}
             files[0].name = "Main.java";
         }
 
-        const response = await fetch('http://localhost:5000/api/public/code/execute', {
+        const response = await fetch(`http://${window.location.hostname}:5000/api/public/code/execute`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -489,7 +489,7 @@ ${otherCode}
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('http://localhost:5000/api/public/crack-code/submit', {
+            const response = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

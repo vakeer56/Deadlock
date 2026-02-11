@@ -59,7 +59,7 @@ const Deadlock = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:5000/api/admin/deadlock/team/check/${debouncedTeamName}`);
+        const response = await axios.get(`http://${window.location.hostname}:5000/api/admin/deadlock/team/check/${debouncedTeamName}`);
 
         if (response.data.success) {
           if (response.data.exists) {
@@ -171,7 +171,7 @@ const Deadlock = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:5000/api/admin/deadlock/team", teamData);
+      const response = await axios.post(`http://${window.location.hostname}:5000/api/admin/deadlock/team`, teamData);
 
       if (response.data.success) {
         showNotification("DEPLOYMENT SUCCESSFUL.", "success");

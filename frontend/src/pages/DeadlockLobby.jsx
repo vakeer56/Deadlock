@@ -19,7 +19,7 @@ const DeadlockLobby = ({ onMatchFound }) => {
         const pollDeadlockStatus = async () => {
             try {
                 // 1. Check Team Status
-                const teamRes = await fetch(`http://localhost:5000/api/public/crack-code/team-status/${teamId}`);
+                const teamRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/team-status/${teamId}`);
                 if (teamRes.ok) {
                     const data = await teamRes.json();
                     setTeamStatus(data);
@@ -32,7 +32,7 @@ const DeadlockLobby = ({ onMatchFound }) => {
                 }
 
                 // 2. Check Match Assignment
-                const matchRes = await fetch(`http://localhost:5000/api/public/deadlock/match/team/${teamId}`);
+                const matchRes = await fetch(`http://${window.location.hostname}:5000/api/public/deadlock/match/team/${teamId}`);
                 if (matchRes.ok) {
                     const data = await matchRes.json();
 
