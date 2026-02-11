@@ -13,7 +13,7 @@ exports.submitDeadlock = async (req, res) => {
     try {
         const { matchId, teamId, questionId, language, code } = req.body;
 
-        // 1️⃣ Validate match
+        // Validate match
         const match = await DeadlockMatch.findById(matchId);
         if (!match) {
             return res.status(404).json({ message: "Match not found" });
@@ -23,7 +23,7 @@ exports.submitDeadlock = async (req, res) => {
             return res.status(400).json({ message: "Match is not ongoing" });
         }
 
-        // 2️⃣ Validate team
+        // Validate team
         const isTeamA = match.teamA.toString() === teamId;
         const isTeamB = match.teamB.toString() === teamId;
 
@@ -31,7 +31,7 @@ exports.submitDeadlock = async (req, res) => {
             return res.status(403).json({ message: "Team not in this match" });
         }
 
-        // 3️⃣ Get CURRENT question from match (AUTHORITATIVE)
+        // Get CURRENT question from match (AUTHORITATIVE)
         const currentQuestionId =
             match.questions[match.currentQuestionIndex];
 
@@ -52,7 +52,7 @@ exports.submitDeadlock = async (req, res) => {
         let verdict = "AC";
         let error = null;
 
-        // 4️⃣ Run code against all test cases
+        // Run code against all test cases
         for (const testCase of question.testCases) {
             const result = await runCode({
                 language,
@@ -75,7 +75,7 @@ exports.submitDeadlock = async (req, res) => {
             }
         }
 
-        // 5️⃣ Save submission
+        // Save submission
         await DeadlockSubmission.create({
             matchId: matchId,
             teamId: teamId,
@@ -86,7 +86,7 @@ exports.submitDeadlock = async (req, res) => {
             isCorrect: verdict === "AC"
         });
 
-        // 6️⃣ If failed → stop here
+        // If failed -> stop here
         if (verdict !== "AC") {
             return res.json({
                 success: false,
@@ -95,10 +95,10 @@ exports.submitDeadlock = async (req, res) => {
             });
         }
 
-        // 7️⃣ Move tug
+        //Move tug
         match.tugPosition += isTeamA ? 1 : -1;
 
-        // 8️⃣ Advance question
+        // Advance question
         match.currentQuestionIndex += 1;
 
         // Prevent overflow
@@ -107,7 +107,7 @@ exports.submitDeadlock = async (req, res) => {
                 match.questions.length - 1;
         }
 
-        // 9️⃣ Win condition
+        // Win condition
         if (Math.abs(match.tugPosition) >= match.maxPull) {
             match.status = "finished";
             match.winner = teamId;
@@ -129,12 +129,7 @@ exports.submitDeadlock = async (req, res) => {
     }
 };
 
-/*
-----------------------------------------------------
-GET MATCH STATE
-GET /api/public/deadlock/match/:id
-----------------------------------------------------
-*/
+//get match state
 exports.getMatchState = async (req, res) => {
     try {
         const match = await DeadlockMatch.findById(req.params.id)
@@ -163,3 +158,35 @@ exports.getMatchState = async (req, res) => {
 };
 
 
+exports.getMatchByTeam = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        // Basic validation
+        if (!teamId || teamId.length !== 24) {
+            return res.status(400).json({ message: "Invalid ID" });
+        }
+
+        const match = await DeadlockMatch.findOne({
+            $or: [{ teamA: teamId }, { teamB: teamId }],
+            status: { $in: ["lobby", "ongoing"] }
+        }).populate("teamA teamB", "name");
+
+        if (!match) {
+            return res.status(404).json({ message: "No active match found." });
+        }
+
+        const isTeamA = match.teamA._id.toString() === teamId;
+        const opponent = isTeamA ? match.teamB : match.teamA;
+
+        res.json({
+            matchId: match._id,
+            status: match.status,
+            opponentName: opponent ? opponent.name : "PENDING...",
+            tugPosition: match.tugPosition,
+            maxPull: match.maxPull
+        });
+    } catch (error) {
+        console.error("Match by team error:", error);
+        res.status(500).json({ message: "System error." });
+    }
+};

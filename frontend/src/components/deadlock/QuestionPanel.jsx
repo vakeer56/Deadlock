@@ -10,8 +10,6 @@ const QuestionPanel = ({ question }) => {
             <h1 className="question-title">{question.title}</h1>
             <div className="question-desc">{question.description}</div>
 
-            {/* Input/Output Format - assuming these fields exist or are part of desc */}
-            {/* If structured data is available, render it. Otherwise rely on desc */}
 
             {question.testCases && question.testCases.length > 0 && (
                 <div className="examples-section">

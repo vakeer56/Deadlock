@@ -30,7 +30,7 @@ const DeadlockLobby = ({ onMatchFound }) => {
                 }
 
                 // 2. Check Match Assignment
-                const matchRes = await fetch(`http://localhost:5000/api/public/deadlock/match/${teamId}`);
+                const matchRes = await fetch(`http://localhost:5000/api/public/deadlock/match/team/${teamId}`);
                 if (matchRes.ok) {
                     const data = await matchRes.json();
                     setMatchInfo(data);
