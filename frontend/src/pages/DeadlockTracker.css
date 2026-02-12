@@ -504,8 +504,8 @@
     animation: rotate 4s linear reverse infinite;
 }
 
-.loading-text {
-    color: #00f3ff;
+.tracker-loading-screen .loading-text {
+    color: #00f3ff ;
     letter-spacing: 5px;
     animation: blink 1s step-end infinite;
 }
