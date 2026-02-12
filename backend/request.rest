@@ -52,7 +52,7 @@ Content-Type: application/json
   "winner": "698e4a2d5a116a5a6b844c37"
 }
 
-### Finish Match (New - By Team ID Only)
+### Finish Match (new-updated)
 PATCH http://localhost:5000/api/admin/deadlock/finish
 Content-Type: application/json
 
