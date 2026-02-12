@@ -45,11 +45,19 @@ PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/sw
 PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/reset
 
 ###
-PATCH http://localhost:5000/api/admin/deadlock/match/6982297f3adcaf19377c84ef/finish
+PATCH http://localhost:5000/api/admin/deadlock/match/698e6125e463e04b7bdb1153/finish
 Content-Type: application/json
 
 {
-  "winner": "698228733adcaf19377c84e3"
+  "winner": "698e4a2d5a116a5a6b844c37"
+}
+
+### Finish Match (New - By Team ID Only)
+PATCH http://localhost:5000/api/admin/deadlock/finish
+Content-Type: application/json
+
+{
+    "winner": "698e4a2d5a116a5a6b844c37"
 }
 ###
 

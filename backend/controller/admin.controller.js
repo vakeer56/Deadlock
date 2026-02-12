@@ -180,12 +180,25 @@ exports.finishMatch = async (req, res) => {
             });
         }
 
-        const match = await DeadlockMatch.findById(id);
+        let match;
+
+        // Optimized: If ID is provided (and likely valid ObjectId), try to find by ID
+        if (id && mongoose.Types.ObjectId.isValid(id)) {
+            match = await DeadlockMatch.findById(id);
+        }
+
+        // Fallback: If no match found yet (or no ID), try to find active match by Team ID
+        if (!match) {
+            match = await DeadlockMatch.findOne({
+                $or: [{ teamA: winner }, { teamB: winner }],
+                status: { $in: ['ongoing', 'lobby'] }
+            });
+        }
 
         if (!match || !match.teamA || !match.teamB) {
             return res.status(404).json({
                 success: false,
-                message: "Match or teams not found"
+                message: "Active match not found for this team"
             });
         }
 

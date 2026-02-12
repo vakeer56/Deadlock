@@ -30,6 +30,8 @@ router.get("/team/check/:name", checkTeam);
 router.patch("/match/:id/update-teams", updateTeams);
 router.patch("/match/:id/swap", swapTeams);
 router.patch("/match/:id/reset", resetMatch);
+// New route: Finish by Team ID (no match ID required)
+router.patch("/finish", finishMatch);
 router.patch("/match/:id/finish", finishMatch);
 
 router.get("/teams", getTeam);
