@@ -1,0 +1,27 @@
+{
+  "name": "deadlock",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vakeer56/Deadlock.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vakeer56/Deadlock/issues"
+  },
+  "homepage": "https://github.com/vakeer56/Deadlock#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
