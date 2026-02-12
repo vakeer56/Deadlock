@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     getTeams,
     getMatches,
@@ -7,15 +8,18 @@ import {
     updateMatchTeams,
     swapMatchTeams,
     resetMatch,
-    startAllMatches
+    finishMatch,
+    startAllMatches,
+    terminateSession
 } from '../api/deadlockAdmin';
 import TeamCard from '../components/TeamCard';
 import './Admin.css';
 
 const AdminPage = () => {
+    const navigate = useNavigate();
     const [unassignedTeams, setUnassignedTeams] = useState([]);
     const [teamA, setTeamA] = useState([]);
-    const [teamB, setTeamB] = useState([]);
+    const [teamB, setTeamB] = useState([]); // Team OMEGA
 
     const [matchId, setMatchId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -35,19 +39,6 @@ const AdminPage = () => {
                 setLoading(true);
                 const teamsData = await getTeams();
                 setUnassignedTeams(teamsData.teams || []);
-
-                const matchesData = await getMatches();
-                const matches = matchesData.matches || [];
-
-                const loadedTeamA = [];
-                const loadedTeamB = [];
-                matches.forEach(m => {
-                    if (m.teamA) loadedTeamA.push(m.teamA);
-                    if (m.teamB) loadedTeamB.push(m.teamB);
-                });
-
-                setTeamA(loadedTeamA);
-                setTeamB(loadedTeamB);
             } catch (err) {
                 console.error(err);
                 showToast("Failed to load data");
@@ -68,6 +59,16 @@ const AdminPage = () => {
             return () => clearTimeout(timer);
         }
     }, [gameStarted, initializationProgress]);
+
+    // Redirection after initialization
+    useEffect(() => {
+        if (initializationProgress === 100) {
+            const timer = setTimeout(() => {
+                navigate('/admin/deadlock-tracker');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [initializationProgress, navigate]);
 
     const showToast = (msg) => {
         setToast(msg);
@@ -149,19 +150,33 @@ const AdminPage = () => {
                 showToast("Swap failed on server");
             }
         }
+        if (teamA.length !== teamB.length || teamA.length === 0) {
+            showToast("Invalid pairings: Columns must be balanced");
+            return;
+        }
+
+        // Cross-check for duplicate IDs between A and B
+        const aIds = new Set(teamA.map(t => t._id));
+        const duplicateFound = teamB.some(t => aIds.has(t._id));
+        if (duplicateFound) {
+            showToast("Invalid pairings: Team found in both ALPHA and OMEGA");
+            return;
+        }
     };
 
     const handleClearBoard = async () => {
+        if (!window.confirm("Nuclear Reset will wipe ALL match data and reset all teams to default 'pending' state. Proceed?")) return;
         try {
-            await purgeMatches();
-            setUnassignedTeams(prev => [...prev, ...teamA, ...teamB]);
+            await terminateSession();
             setTeamA([]);
             setTeamB([]);
-            setMatchId(null);
-            showToast("Board cleared");
+            setUnassignedTeams([]);
+            const teamsData = await getTeams();
+            setUnassignedTeams(teamsData.teams || []);
+            showToast("System Reset Complete: Baseline Restored.");
         } catch (err) {
             console.error(err);
-            showToast("Failed to purge matches on server");
+            showToast("Nuclear Reset Failed");
         }
     };
 
@@ -209,6 +224,11 @@ const AdminPage = () => {
                                 <p className={initializationProgress > 45 ? 'visible' : ''}>MATCH PROTOCOLS LIVE...</p>
                                 <p className={initializationProgress > 70 ? 'visible' : ''}>TERMINAL ACCESS GRANTED...</p>
                                 <p className={initializationProgress > 90 ? 'visible' : ''}>SYSTEMS STABLE. BEGINNING...</p>
+                                {initializationProgress === 100 && (
+                                    <p className="visible redirect-msg blink" style={{ color: '#00ff41', marginTop: '1rem', fontWeight: 'bold' }}>
+                                        REDIRECTING TO REALTIME STATUS TRACKER...
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -238,7 +258,7 @@ const AdminPage = () => {
                         <button
                             onClick={handleStartAll}
                             className="cyber-btn primary"
-                            disabled={teamA.length === 0 || teamA.length !== teamB.length}
+                            disabled={loading || teamA.length === 0 || teamA.length !== teamB.length}
                         >
                             <span className="btn-glitch"></span>
                             INITIALIZE ALL MATCHES
@@ -253,9 +273,8 @@ const AdminPage = () => {
                         <button
                             onClick={handleClearBoard}
                             className="cyber-btn danger"
-                            disabled={teamA.length === 0 && teamB.length === 0}
                         >
-                            PURGE BOARD
+                            TERMINATE SESSION
                         </button>
                     </div>
                 </header>

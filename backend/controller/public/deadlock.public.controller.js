@@ -98,11 +98,13 @@ exports.submitDeadlock = async (req, res) => {
 
         //Move tug
         if (isTeamA) {
-            match.tugPosition += 1;
+            match.tugPosition -= 1; // Alpha pulls negative
             match.scoreA += 1;
+            match.pullHistory.push('A');
         } else {
-            match.tugPosition -= 1;
+            match.tugPosition += 1; // Omega pulls positive
             match.scoreB += 1;
+            match.pullHistory.push('B');
         }
 
         // Advance question (Linear, 5 questions total)
@@ -191,7 +193,8 @@ exports.getMatchState = async (req, res) => {
             winner: match.winner,
             currentQuestionIndex: match.currentQuestionIndex,
             totalQuestions: match.questions.length,
-            currentQuestion
+            currentQuestion,
+            pullHistory: match.pullHistory
         });
     } catch (err) {
         console.error(err);

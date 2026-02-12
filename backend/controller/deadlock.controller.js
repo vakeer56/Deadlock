@@ -14,16 +14,25 @@ exports.solveProblem = async (req, res) => {
             });
         }
 
-        match.tugPosition += 1;
+        // Identify which team is pulling
+        const isTeamA = solvingTeamId.toString() === match.teamA.toString();
+
+        // Alpha pulls negative (-), Omega pulls positive (+)
+        match.tugPosition += isTeamA ? -1 : 1;
 
         // WIN CONDITION
-        if (match.tugPosition >= match.maxPull) {
-            const winner = solvingTeamId;
-            const loser =
-                solvingTeamId.toString() === match.teamA.toString()
-                    ? match.teamB
-                    : match.teamA;
+        let winner = null;
+        let loser = null;
 
+        if (match.tugPosition <= -match.maxPull) {
+            winner = match.teamA;
+            loser = match.teamB;
+        } else if (match.tugPosition >= match.maxPull) {
+            winner = match.teamB;
+            loser = match.teamA;
+        }
+
+        if (winner) {
             match.status = "finished";
             match.winner = winner;
             match.loser = loser;
@@ -41,8 +50,9 @@ exports.solveProblem = async (req, res) => {
 
             return res.json({
                 success: true,
-                message: "Match won! Advanced to Crack the Code",
-                winner
+                message: `Match won by ${isTeamA ? 'ALPHA' : 'OMEGA'}!`,
+                winner,
+                status: "finished"
             });
         }
 

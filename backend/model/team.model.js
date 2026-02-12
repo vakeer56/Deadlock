@@ -17,11 +17,11 @@ const teamSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }, 
+    },
     currentRound: {
         type: String,
-        enum: ['deadlock', 'crack-the-code', 'eliminated'],
-        default: 'deadlock'
+        enum: ['deadlock', 'crack-the-code', 'eliminated', 'pending'],
+        default: 'pending'
     },
     deadlockResult: {
         type: String,
@@ -29,16 +29,16 @@ const teamSchema = new mongoose.Schema({
         default: 'pending'
     },
     currentQuestionIndex: {
-    type: Number,
-    default: 0
-},
+        type: Number,
+        default: 0
+    },
 
     questions: [
         {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "DeadlockQuestion"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "DeadlockQuestion"
         }
-]
+    ]
 
 
 }, {

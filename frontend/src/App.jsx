@@ -6,6 +6,7 @@ import CrackTheCode from "./pages/CrackTheCode";
 import CrackCodeAdmin from "./pages/CrackCodeAdmin";
 import DeadlockPage from './pages/DeadlockPage';
 import DeadlockRedirect from './pages/DeadlockRedirect';
+import DeadlockTracker from './pages/DeadlockTracker';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/deadlock/*" element={<Navigate to="/" replace />} />
         <Route path="/" element={<Deadlock />} />
         <Route path="/admin/deadlock" element={<AdminPage />} />
+        <Route path="/admin/deadlock-tracker" element={<DeadlockTracker />} />
         <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
         <Route path="/admin/crack-code" element={<CrackCodeAdmin />} />
       </Routes>

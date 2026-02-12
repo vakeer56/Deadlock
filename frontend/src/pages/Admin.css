@@ -292,17 +292,17 @@
 }
 
 .column-omega {
-    border-color: rgba(0, 255, 65, 0.3) !important;
+    border-color: rgba(0, 243, 255, 0.3) !important;
 }
 
 .column-omega .column-header {
-    background: rgba(0, 255, 65, 0.1);
-    color: #00ff41;
-    border-bottom-color: rgba(0, 255, 65, 0.4);
+    background: rgba(0, 243, 255, 0.1);
+    color: #00f3ff;
+    border-bottom-color: rgba(0, 243, 255, 0.5);
 }
 
 .column-omega::before {
-    background: linear-gradient(90deg, transparent, #00ff41, transparent) !important;
+    background: linear-gradient(90deg, transparent, #00f3ff, transparent) !important;
 }
 
 .column-header {

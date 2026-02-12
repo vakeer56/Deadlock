@@ -40,6 +40,16 @@ export const purgeMatches = async () => {
     }
 };
 
+export const terminateSession = async () => {
+    try {
+        const response = await api.post('/terminate');
+        return response.data;
+    } catch (error) {
+        console.error("Error terminating session:", error);
+        throw error;
+    }
+};
+
 export const createMatch = async () => {
     try {
         const response = await api.post('/match', {});

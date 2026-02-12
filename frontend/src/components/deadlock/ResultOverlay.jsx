@@ -1,6 +1,15 @@
 import React from 'react';
 
-const ResultOverlay = ({ result, onClose }) => {
+const ResultOverlay = React.memo(({ result, onClose }) => {
+    React.useEffect(() => {
+        if (result) {
+            const timer = setTimeout(() => {
+                onClose();
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [result?.verdict, onClose]);
+
     if (!result) return null;
 
     return (
@@ -33,24 +42,9 @@ const ResultOverlay = ({ result, onClose }) => {
                         The question has changed. Reloading...
                     </div>
                 )}
-
-                <button
-                    onClick={onClose}
-                    style={{
-                        marginTop: '2rem',
-                        padding: '0.8rem 2rem',
-                        background: '#333',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Close
-                </button>
             </div>
         </div>
     );
-};
+});
 
 export default ResultOverlay;

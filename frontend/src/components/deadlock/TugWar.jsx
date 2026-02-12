@@ -2,12 +2,13 @@ import React from 'react';
 
 const TugWar = ({ tugPosition, maxPull, teamA, teamB }) => {
 
+    const safeMaxPull = maxPull || 5;
     const percentage = Math.min(100, Math.max(0, ((tugPosition + safeMaxPull) / (2 * safeMaxPull)) * 100));
 
     // Determine visual state
     const isNeutral = tugPosition === 0;
-    const isTeamAWinning = tugPosition > 0;
-    const isTeamBWinning = tugPosition < 0;
+    const isTeamAWinning = tugPosition < 0; // Alpha (Left) wins at negative values
+    const isTeamBWinning = tugPosition > 0; // Gamma (Right) wins at positive values
 
     return (
         <div className="w-full flex flex-col items-center gap-4 mb-8">

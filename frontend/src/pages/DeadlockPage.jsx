@@ -56,15 +56,50 @@ const DeadlockPage = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionResult, setSubmissionResult] = useState(null);
+    const lastQuestionIndex = React.useRef(-1);
+    const isFetching = React.useRef(false);
+    const isSubmittingRef = React.useRef(false);
+    const submissionResultRef = React.useRef(null);
+
+    // Sync refs with state
+    useEffect(() => {
+        isSubmittingRef.current = isSubmitting;
+    }, [isSubmitting]);
+
+    useEffect(() => {
+        submissionResultRef.current = submissionResult;
+    }, [submissionResult]);
+
+    const handleCloseOverlay = useCallback(() => {
+        setSubmissionResult(null);
+    }, []);
 
     const fetchMatchState = useCallback(async () => {
+        if (isFetching.current || isSubmittingRef.current) return;
+        isFetching.current = true;
         try {
             const res = await axios.get(`/api/public/deadlock/match/${matchId}`);
             const data = res.data;
 
-            setMatch(data);
+            // Detect if question advanced (opponent solved it)
+            if (lastQuestionIndex.current !== -1 && data.currentQuestionIndex > lastQuestionIndex.current) {
+                // If we aren't currently submitting AND we don't already have a local AC being displayed, show "Too Slow!"
+                if (!isSubmittingRef.current && submissionResultRef.current?.verdict !== "AC") {
+                    setSubmissionResult({ verdict: "CONFLICT", error: "Opponent solved it first!" });
+                }
+            }
+            lastQuestionIndex.current = data.currentQuestionIndex;
+
+            // Optional: Only set state if something actually changed to avoid heavy re-renders
+            setMatch(prev => {
+                if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+                return data;
+            });
             setTugPosition(data.tugPosition);
-            setCurrentQuestion(data.currentQuestion);
+            setCurrentQuestion(prev => {
+                if (prev?._id === data.currentQuestion?._id) return prev;
+                return data.currentQuestion;
+            });
 
             const storedTeamId = localStorage.getItem('teamId');
             if (storedTeamId) {
@@ -75,6 +110,8 @@ const DeadlockPage = () => {
         } catch (err) {
             setError(err.response?.data?.message || "Failed to load match");
             setLoading(false);
+        } finally {
+            isFetching.current = false;
         }
     }, [matchId]);
 
@@ -82,7 +119,7 @@ const DeadlockPage = () => {
         if (match?.status === 'finished') return;
 
         fetchMatchState();
-        const interval = setInterval(fetchMatchState, 5000);
+        const interval = setInterval(fetchMatchState, 500);
         return () => clearInterval(interval);
     }, [fetchMatchState, match?.status]);
 
@@ -126,6 +163,8 @@ const DeadlockPage = () => {
                 if (data.success) {
                     setSubmissionResult({ verdict: "AC" });
                     setTugPosition(data.tugPosition);
+                    // Update ref immediately to prevent poller race condition
+                    lastQuestionIndex.current = data.nextQuestionIndex;
 
                     if (data.status === 'finished') {
                         setMatch(prev => ({
@@ -207,7 +246,7 @@ const DeadlockPage = () => {
 
             <ResultOverlay
                 result={submissionResult}
-                onClose={() => setSubmissionResult(null)}
+                onClose={handleCloseOverlay}
             />
         </div>
     );

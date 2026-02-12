@@ -197,6 +197,14 @@ exports.finishMatch = async (req, res) => {
         match.status = "finished";
         match.winner = winner;
         match.loser = loser;
+
+        // SYMBOLIC FIX: Set tugPosition to the win threshold for consistent UI
+        if (winner.toString() === match.teamA?.toString()) {
+            match.tugPosition = -match.maxPull;
+        } else {
+            match.tugPosition = match.maxPull;
+        }
+
         await match.save();
 
         await Team.findByIdAndUpdate(winner, {
@@ -228,22 +236,11 @@ GET DEADLOCK TEAMS (ELIGIBLE ONLY)
 ---------------------------------------------------- */
 exports.getTeam = async (req, res) => {
     try {
-        // 1. Find all active matches to identify busy teams
-        const activeMatches = await DeadlockMatch.find({
-            status: { $in: ["lobby", "ongoing"] }
-        }).select("teamA teamB");
-
-        const busyTeamIds = activeMatches.reduce((acc, match) => {
-            if (match.teamA) acc.push(match.teamA);
-            if (match.teamB) acc.push(match.teamB);
-            return acc;
-        }, []);
-
-        // 2. Fetch teams not in active matches
+        // Fetch all teams eligible for deadlock round (pending results)
+        // Teams start in 'pending' round and move to 'deadlock' when initialized
         const teams = await Team.find({
-            currentRound: "deadlock",
-            deadlockResult: "pending",
-            _id: { $nin: busyTeamIds }
+            currentRound: "pending",
+            deadlockResult: "pending"
         }).select("name members currentRound");
 
         res.json({
@@ -264,9 +261,14 @@ GET ACTIVE DEADLOCK MATCHES
 ---------------------------------------------------- */
 exports.getMatches = async (req, res) => {
     try {
+        // Only fetch matches from the last 2 hours to avoid stale/duplicate historical data
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
         const matches = await DeadlockMatch.find({
-            status: { $in: ["lobby", "ongoing"] }
+            status: { $in: ["lobby", "ongoing", "finished"] },
+            createdAt: { $gte: twoHoursAgo }
         })
+            .sort({ createdAt: -1 }) // Show newest first
             .populate("teamA", "name members currentRound")
             .populate("teamB", "name members currentRound");
 
@@ -284,22 +286,30 @@ exports.getMatches = async (req, res) => {
 };
 
 /* ----------------------------------------------------
-PURGE ALL LOBBY/ONGOING MATCHES
+TERMINATE SESSION (NUCLEAR RESET)
 ---------------------------------------------------- */
-exports.purgeMatches = async (req, res) => {
+exports.terminateSession = async (req, res) => {
     try {
+        // 1. Delete all matches and submissions
         await DeadlockMatch.deleteMany({});
         await DeadlockSubmission.deleteMany({});
-        await Team.updateMany({}, { deadlockResult: 'pending' });
+
+        // 2. Deep reset all teams to factory defaults for the round
+        await Team.updateMany({}, {
+            deadlockResult: 'pending',
+            currentRound: 'pending',
+            currentQuestionIndex: 0,
+            questions: []
+        });
 
         res.json({
             success: true,
-            message: "All matches purged successfully (Collection truncated)"
+            message: "Session terminated. All systems reset to baseline."
         });
     } catch (err) {
         res.status(500).json({
             success: false,
-            message: "Failed to purge matches",
+            message: "Failed to terminate session",
             error: err.message
         });
     }
@@ -493,6 +503,24 @@ exports.startAllDeadlockMatches = async (req, res) => {
         for (let i = 0; i < teamAIds.length; i++) {
             const teamAId = teamAIds[i];
             const teamBId = teamBIds[i];
+
+            // CLEANUP: Force-delete ALL previous matches (ongoing OR finished) for these teams
+            // This prevents "false entries" from previous games appearing in the tracker
+            await DeadlockMatch.deleteMany({
+                $or: [
+                    { teamA: { $in: [teamAId, teamBId] } },
+                    { teamB: { $in: [teamAId, teamBId] } }
+                ]
+            });
+
+            // GUARD: Prevent a team from playing itself
+            if (teamAId.toString() === teamBId.toString()) continue;
+
+            // Officially move teams to deadlock round
+            await Team.updateMany(
+                { _id: { $in: [teamAId, teamBId] } },
+                { currentRound: "deadlock" }
+            );
 
             const match = await DeadlockMatch.create({
                 teamA: teamAId,
