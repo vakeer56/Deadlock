@@ -104,13 +104,13 @@ const CrackCodeLobby = ({ onGameReady }) => {
                         <p className="loading-message">
                             {isWinner
                                 ? 'CORE STABILIZED. SCANNING FOR COMMANDS.'
-                                : (globalStarted
+                                : (isLoser || globalStarted
                                     ? 'MISSION COMPLETED. YOU ARE INELIGIBLE FOR CRACK THE CODE.'
                                     : 'AWAITING BLUEPRINT DOMINANCE. FINISH DEADLOCK.')}
                         </p>
                     </div>
 
-                    {(!globalStarted || isWinner) ? (
+                    {(!globalStarted || isWinner) && !isLoser ? (
                         <div className="rules-section">
                             <div className="rules-card">
                                 <div className="card-header">

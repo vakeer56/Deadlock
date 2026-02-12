@@ -105,23 +105,43 @@ exports.submitDeadlock = async (req, res) => {
             match.scoreB += 1;
         }
 
-        // Advance question (Looping)
-        match.currentQuestionIndex = (match.currentQuestionIndex + 1) % match.questions.length;
+        // Advance question (Linear, 5 questions total)
+        let winnerId = null, loserId = null;
+        match.currentQuestionIndex += 1;
 
-        // Win condition
-        if (Math.abs(match.tugPosition) >= match.maxPull) {
+        // Check if 5 questions have been completed
+        if (match.currentQuestionIndex >= 5) {
             match.status = "finished";
-            match.winner = teamId;
-            match.loser = isTeamA ? match.teamB : match.teamA;
 
-            // Update winner team record
-            await Team.findByIdAndUpdate(match.winner, {
+            // Determine winner based on scores
+
+            if (match.scoreA > match.scoreB) {
+                winnerId = match.teamA;
+                loserId = match.teamB;
+            } else if (match.scoreB > match.scoreA) {
+                winnerId = match.teamB;
+                loserId = match.teamA;
+            } else {
+                // In case of a tie, the team closer to their side wins
+                if (match.tugPosition > 0) {
+                    winnerId = match.teamA;
+                    loserId = match.teamB;
+                } else {
+                    winnerId = match.teamB;
+                    loserId = match.teamA;
+                }
+            }
+
+            match.winner = winnerId;
+            match.loser = loserId;
+
+            // Update team records
+            await Team.findByIdAndUpdate(winnerId, {
                 currentRound: "crack-the-code",
                 deadlockResult: "win"
             });
 
-            // Update loser team record
-            await Team.findByIdAndUpdate(match.loser, {
+            await Team.findByIdAndUpdate(loserId, {
                 currentRound: "eliminated",
                 deadlockResult: "lose"
             });
@@ -136,7 +156,9 @@ exports.submitDeadlock = async (req, res) => {
             scoreA: match.scoreA,
             scoreB: match.scoreB,
             status: match.status,
-            nextQuestionIndex: match.currentQuestionIndex
+            nextQuestionIndex: match.currentQuestionIndex,
+            winner: winnerId,
+            loser: loserId
         });
     } catch (err) {
         console.error("Deadlock submit error:", err);
@@ -155,13 +177,8 @@ exports.getMatchState = async (req, res) => {
             return res.status(404).json({ message: "Match not found" });
         }
 
-        console.log("DEBUG: Match questions found:", match.questions ? match.questions.length : "NULL");
-        console.log("DEBUG: Match currentQuestionIndex:", match.currentQuestionIndex);
-
         const currentQuestion =
             match.questions[match.currentQuestionIndex];
-
-        console.log("DEBUG: Found currentQuestion:", currentQuestion ? currentQuestion.title : "UNDEFINED");
 
         res.json({
             teamA: match.teamA,

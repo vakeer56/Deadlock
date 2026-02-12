@@ -61,8 +61,6 @@ const executeCode = async (req, res) => {
             args: args || []
         };
 
-        console.log("Sending payload to Piston:", JSON.stringify(payload, null, 2));
-
         const response = await axios.post(PISTON_API_URL, payload);
         const { run } = response.data;
 

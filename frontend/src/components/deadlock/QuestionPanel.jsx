@@ -8,9 +8,6 @@ const QuestionPanel = ({ question, questionIndex, totalQuestions }) => {
     return (
         <div className="question-panel">
             <div className="question-panel-content">
-                <div className="question-meta cyber-technical-label">
-                    QUESTION {questionIndex + 1} OF {totalQuestions}
-                </div>
                 <h1 className="question-title cyber-glitch-text">{question.title}</h1>
                 <div className="question-desc">{question.description}</div>
 

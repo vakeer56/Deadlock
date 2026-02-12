@@ -7,6 +7,8 @@ import QuestionPanel from '../components/deadlock/QuestionPanel';
 import CodePanel from '../components/deadlock/CodePanel';
 import SubmissionPanel from '../components/deadlock/SubmissionPanel';
 import ResultOverlay from '../components/deadlock/ResultOverlay';
+import WinnerBackground from '../components/deadlock/WinnerBackground';
+import LoserBackground from '../components/deadlock/LoserBackground';
 import '../components/deadlock/deadlock.css';
 
 const DeadlockPage = () => {
@@ -22,58 +24,39 @@ const DeadlockPage = () => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
 
     // User State
-    const [teamId, setTeamId] = useState(null); // Should be determined from context/auth
+    const [teamId, setTeamId] = useState(null);
 
     // Submission State
-    const CODE_TEMPLATES = {
-        python: `# HOW TO READ INPUT:
-# 1. Single line of values (e.g., "6 7")
-#    a, b = map(int, input().split())
-# 2. Distinct lines
-#    a = int(input())
-#    b = int(input())
+    const getBoilerplate = (lang, inputCount = 2) => {
+        const inputsPy = inputCount > 1
+            ? `a, b = map(int, input().split()) # Update this for ${inputCount} inputs`
+            : `n = int(input())`;
 
-# Write your code here
-`,
-        cpp: `// HOW TO READ INPUT (C++):
-#include <iostream>
-using namespace std;
+        const inputsCpp = inputCount > 1
+            ? `    int a, b; // Update for ${inputCount} inputs\n    cin >> a >> b;`
+            : `    int n;\n    cin >> n;`;
 
-int main() {
-    // Example: Read two integers
-    // int a, b;
-    // cin >> a >> b;
+        const inputsJava = inputCount > 1
+            ? `        if (sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt(); // Update for ${inputCount} inputs\n        }`
+            : `        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n        }`;
 
-    // Write your code here
-    
-    return 0;
-}
-`,
-        java: `// HOW TO READ INPUT (Java):
-import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        
-        // Example: Read two integers
-        // if (sc.hasNextInt()) {
-        //     int a = sc.nextInt();
-        //     int b = sc.nextInt();
-        // }
-
-        // Write your code here
-    }
-}
-`
+        const templates = {
+            python: `# HOW TO READ INPUT:\n${inputsPy}\n\n# Write your code here\n`,
+            cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n${inputsCpp}\n\n    // Write your code here\n\n    return 0;\n}\n`,
+            java: `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n\n${inputsJava}\n\n        // Write your code here\n    }\n}\n`
+        };
+        return templates[lang] || "";
     };
 
     const [language, setLanguage] = useState("python");
-    const [code, setCode] = useState(CODE_TEMPLATES.python);
+    const [codes, setCodes] = useState({
+        python: getBoilerplate("python"),
+        cpp: getBoilerplate("cpp"),
+        java: getBoilerplate("java")
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submissionResult, setSubmissionResult] = useState(null); // { verdict, error }
+    const [submissionResult, setSubmissionResult] = useState(null);
 
-    // Fetch Match State
     const fetchMatchState = useCallback(async () => {
         try {
             const res = await axios.get(`/api/public/deadlock/match/${matchId}`);
@@ -83,7 +66,6 @@ public class Main {
             setTugPosition(data.tugPosition);
             setCurrentQuestion(data.currentQuestion);
 
-            // Auto-determine team from localStorage
             const storedTeamId = localStorage.getItem('teamId');
             if (storedTeamId) {
                 setTeamId(storedTeamId);
@@ -97,25 +79,27 @@ public class Main {
     }, [matchId]);
 
     useEffect(() => {
-        fetchMatchState();
+        if (match?.status === 'finished') return;
 
-        // Polling to keep tug position in sync
+        fetchMatchState();
         const interval = setInterval(fetchMatchState, 5000);
         return () => clearInterval(interval);
-    }, [fetchMatchState]);
+    }, [fetchMatchState, match?.status]);
 
-    // Update code template when language changes
     useEffect(() => {
-        // Only update if current code is an exact match for one of the other templates 
-        // or is a solution-cleared message, to avoid overwriting user work accidentally.
-        // For simplicity in a high-speed game, we'll just check if it's "mostly" a template.
-        const otherLanguages = Object.keys(CODE_TEMPLATES).filter(l => l !== language);
-        const isDefaultTemplate = otherLanguages.some(l => code === CODE_TEMPLATES[l]) || code === "// Question Solved! Loading next...";
+        if (!currentQuestion) return;
+        const firstInput = currentQuestion.testCases?.[0]?.input || "";
+        const inputLines = firstInput.trim().split('\n');
+        const inputCount = inputLines.length > 1
+            ? inputLines.length
+            : firstInput.trim().split(/\s+/).length;
 
-        if (isDefaultTemplate) {
-            setCode(CODE_TEMPLATES[language]);
-        }
-    }, [language]);
+        setCodes({
+            python: getBoilerplate("python", inputCount),
+            cpp: getBoilerplate("cpp", inputCount),
+            java: getBoilerplate("java", inputCount)
+        });
+    }, [currentQuestion?._id]);
 
     const handleCodeSubmit = async () => {
         if (!teamId) {
@@ -132,29 +116,29 @@ public class Main {
                 teamId,
                 questionId: currentQuestion._id,
                 language,
-                code
+                code: codes[language]
             };
 
             const res = await axios.post('/api/public/deadlock/submit', payload);
 
             if (res.status === 200) {
                 const data = res.data;
-
-                // Handle Success/Failure Verdicts
                 if (data.success) {
                     setSubmissionResult({ verdict: "AC" });
                     setTugPosition(data.tugPosition);
 
-                    // If match finished?
                     if (data.status === 'finished') {
-                        setMatch(prev => ({ ...prev, status: 'finished' }));
+                        setMatch(prev => ({
+                            ...prev,
+                            status: 'finished',
+                            winner: data.winner,
+                            loser: data.loser,
+                            scoreA: data.scoreA,
+                            scoreB: data.scoreB,
+                            tugPosition: data.tugPosition
+                        }));
                     } else {
-                        // Prepare for next question? 
-                        // The backend returns nextQuestionIndex, but we need the actual question object.
-                        // Best to refetch to get the new question content.
                         fetchMatchState();
-                        // Reset code to current language template
-                        setCode(CODE_TEMPLATES[language]);
                     }
                 } else {
                     setSubmissionResult({
@@ -163,12 +147,10 @@ public class Main {
                     });
                 }
             }
-
         } catch (err) {
-            // Handle 409 Conflict
             if (err.response && err.response.status === 409) {
                 setSubmissionResult({ verdict: "CONFLICT", error: "The question has changed!" });
-                fetchMatchState(); // Auto-sync
+                fetchMatchState();
             } else {
                 setSubmissionResult({ verdict: "ERROR", error: "Submission failed" });
             }
@@ -181,8 +163,13 @@ public class Main {
     if (error) return <div className="error-screen">{error}</div>;
     if (!match) return null;
 
+    if (match.status === 'finished') {
+        return <ResultView match={match} teamId={teamId} userTeam={localStorage.getItem('team')} />;
+    }
+
     return (
         <div className="deadlock-container">
+            <div className="cyber-grid-bg"></div>
             <DeadlockHeader
                 teamA={match.teamA}
                 teamB={match.teamB}
@@ -201,14 +188,12 @@ public class Main {
             <div className="game-lower-section">
                 <QuestionPanel
                     question={currentQuestion}
-                    questionIndex={match?.currentQuestionIndex || 0}
-                    totalQuestions={match?.totalQuestions || 0}
                 />
 
                 <div className="editor-section">
                     <CodePanel
-                        code={code}
-                        setCode={setCode}
+                        code={codes[language]}
+                        setCode={(newCode) => setCodes(prev => ({ ...prev, [language]: newCode }))}
                         language={language}
                         setLanguage={setLanguage}
                         isLocked={match.status === 'finished' || isSubmitting}
@@ -224,6 +209,89 @@ public class Main {
                 result={submissionResult}
                 onClose={() => setSubmissionResult(null)}
             />
+        </div>
+    );
+};
+
+const ResultView = ({ match, teamId, userTeam }) => {
+    const getTeamId = (team) => team?._id || team;
+    const winnerId = getTeamId(match.winner);
+
+    // Check winner against both string ID and team side (A/B)
+    const isWinner = (winnerId && teamId && winnerId === teamId) ||
+        (userTeam === 'A' && winnerId === getTeamId(match.teamA)) ||
+        (userTeam === 'B' && winnerId === getTeamId(match.teamB));
+
+    const teamName = localStorage.getItem('teamName') || (userTeam === 'A' ? "ALPHA" : "OMEGA");
+
+    if (isWinner) {
+        return (
+            <div className="v2-emergency-fix winner-view">
+                <WinnerBackground />
+                <div className="cyber-grid-bg"></div>
+                <div className="winner-container">
+                    <div className="victory-crown">👑</div>
+                    <h1 className="result-title winner-text title-v2">
+                        MISSION ACCOMPLISHED
+                    </h1>
+                    <p className="result-subtitle">CONGRATULATIONS, TEAM {teamName}. THE CORE IS SECURED.</p>
+
+                    <div className="mission-details table-v2">
+                        <div className="detail-line">
+                            <span className="detail-label">PROTOCOL:</span>
+                            <span className="detail-value" style={{ color: '#00ff41' }}>DOMINATION_SUCCESS</span>
+                        </div>
+                        <div className="detail-line">
+                            <span className="detail-label">ALPHA_SCORE:</span>
+                            <span className="detail-value">{match.scoreA}</span>
+                        </div>
+                        <div className="detail-line">
+                            <span className="detail-label">OMEGA_SCORE:</span>
+                            <span className="detail-value">{match.scoreB}</span>
+                        </div>
+                    </div>
+
+                    <div className="button-v2">
+                        <a href="/crackTheCode" className="cyber-btn winner-btn">
+                            CONTINUE TO DECRYPTION
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="v2-emergency-fix loser-view">
+            <LoserBackground />
+            <div className="cyber-grid-bg"></div>
+            <div className="loser-container">
+                <h1 className="result-title loser-text title-v2">
+                    CONNECTION SEVERED
+                </h1>
+                <p className="result-subtitle">THANK YOU FOR YOUR SERVICE, {teamName}.</p>
+
+                <div className="mission-details red-details">
+                    <div className="detail-line">
+                        <span className="detail-label">STATUS:</span>
+                        <span className="detail-value" style={{ color: '#ff4757' }}>ACCESS_REVOKED</span>
+                    </div>
+                    <div className="detail-line">
+                        <span className="detail-label">FINAL_STRENGTH:</span>
+                        <span className="detail-value">{userTeam === 'A' ? match.scoreA : match.scoreB}</span>
+                    </div>
+                </div>
+
+                <div className="revoked-msg">
+                    <p>Terminal session has been terminated by the central core.</p>
+                </div>
+
+                <div className="button-v2">
+                    <a href="/crackTheCode" className="cyber-btn participation-btn">
+                        END GAME SESSION
+                    </a>
+                </div>
+            </div>
         </div>
     );
 };

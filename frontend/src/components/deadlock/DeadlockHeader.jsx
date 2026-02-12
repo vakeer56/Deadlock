@@ -1,16 +1,23 @@
 import React from 'react';
 
 const DeadlockHeader = ({ teamA, teamB, status, winner, userTeam, scoreA, scoreB }) => {
+    const getTeamId = (team) => team?._id || team;
+    const winnerId = getTeamId(winner);
+    const teamAId = getTeamId(teamA);
+    const teamBId = getTeamId(teamB);
+
     return (
         <header className="cyber-hud-header">
             {/* Team Alpha HUD */}
-            <div className={`hud-team-sector alpha-sector ${winner?._id === teamA?._id ? 'victory' : ''}`}>
+            <div className={`hud-team-sector alpha-sector ${winnerId && teamAId && winnerId === teamAId ? 'victory' : ''}`}>
                 <div className="hud-badge alpha-badge">
                     <div className="badge-bg"></div>
                     <span className="badge-label cyber-technical-label">ALPHA</span>
                 </div>
                 <div className="hud-team-info">
-                    <span className="hud-team-name">{teamA?.name || teamA?.teamName || "SYS_ERROR"}</span>
+                    <span className="hud-team-name">
+                        {teamA?.name || teamA?.teamName || "SYS_ERROR"}
+                    </span>
                     <div className="hud-score-display cyber-technical-label">
                         SCORE: <span className="score-value">{scoreA || 0}</span>
                     </div>
@@ -31,7 +38,7 @@ const DeadlockHeader = ({ teamA, teamB, status, winner, userTeam, scoreA, scoreB
                         ) : (
                             <>
                                 <span className="status-txt blink cyber-technical-label">SECURE_LINK::UP</span>
-                                <div className="team-glory-msg cyber-glitch-text">
+                                <div className="team-glory-msg">
                                     {userTeam === 'A' ? "GO ALPHA" : (userTeam === 'B' ? "GO OMEGA" : "COMMENCING")}
                                 </div>
                             </>
@@ -41,9 +48,11 @@ const DeadlockHeader = ({ teamA, teamB, status, winner, userTeam, scoreA, scoreB
             </div>
 
             {/* Team Omega HUD */}
-            <div className={`hud-team-sector omega-sector ${winner?._id === teamB?._id ? 'victory' : ''}`}>
+            <div className={`hud-team-sector omega-sector ${winnerId && teamBId && winnerId === teamBId ? 'victory' : ''}`}>
                 <div className="hud-team-info right">
-                    <span className="hud-team-name">{teamB?.name || teamB?.teamName || "SYS_ERROR"}</span>
+                    <span className="hud-team-name">
+                        {teamB?.name || teamB?.teamName || "SYS_ERROR"}
+                    </span>
                     <div className="hud-score-display cyber-technical-label">
                         SCORE: <span className="score-value">{scoreB || 0}</span>
                     </div>

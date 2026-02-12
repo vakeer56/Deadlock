@@ -486,10 +486,6 @@ exports.startAllDeadlockMatches = async (req, res) => {
         ]);
 
         const questionIds = questions.map(q => q._id);
-        console.log("DEBUG: teamAIds:", teamAIds);
-        console.log("DEBUG: teamBIds:", teamBIds);
-        console.log("DEBUG: Found Questions count:", questions.length);
-        console.log("DEBUG: Question IDs:", questionIds);
 
         const matches = [];
 

@@ -211,10 +211,6 @@ const AdminPage = () => {
                                 <p className={initializationProgress > 90 ? 'visible' : ''}>SYSTEMS STABLE. BEGINNING...</p>
                             </div>
                         </div>
-
-                        <button onClick={() => setGameStarted(false)} className="cyber-btn secondary return-btn">
-                            RETURN TO DASHBOARD
-                        </button>
                     </div>
                 </div>
             </div>
