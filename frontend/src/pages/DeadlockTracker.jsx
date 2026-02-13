@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getMatches, terminateSession } from '../api/deadlockAdmin';
 import './DeadlockTracker.css';
 
 const DeadlockTracker = () => {
+    const navigate = useNavigate();
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,7 +31,7 @@ const DeadlockTracker = () => {
         try {
             await terminateSession();
             setMatches([]);
-            // Optional: Redirect back to admin page or stay on tracker which now shows "NO ACTIVE SESSIONS"
+            navigate('/admin/deadlock');
         } catch (err) {
             console.error("Reset failed:", err);
             alert("Terminate failed on server");
@@ -120,18 +122,7 @@ const MatchCard = ({ match }) => {
                     </div>
                     <div className="team-name-large" style={{ color: colorA }}>{teamA?.name || '---'}</div>
                     <div className="team-progress-mini">
-                        <div className="progress-segments">
-                            {Array.from({ length: 5 }).map((_, i) => {
-                                const wonByA = pullHistory[i] === 'A';
-                                const wonByB = pullHistory[i] === 'B';
-                                return (
-                                    <div
-                                        key={i}
-                                        className={`segment ${wonByA ? 'lit success' : wonByB ? 'lit fail' : ''}`}
-                                    ></div>
-                                );
-                            })}
-                        </div>
+                        {/* Segments removed for smooth tracking */}
                     </div>
                 </div>
 
@@ -141,13 +132,13 @@ const MatchCard = ({ match }) => {
                         <div className="gauge-track">
                             <div className="gauge-center-mark"></div>
                             <div className="gauge-fill alpha" style={{
-                                width: `${tugPosition < 0 ? Math.min(50, Math.abs(tugPosition) * 20) : 0}%`,
+                                width: `${tugPosition < 0 ? (Math.abs(tugPosition) / maxPull) * 50 : 0}%`,
                                 right: '50%',
                                 opacity: tugPosition < 0 ? 0.6 + (Math.abs(tugPosition) / maxPull) * 0.4 : 0,
                                 filter: `blur(${Math.abs(tugPosition) / maxPull * 4}px)`
                             }}></div>
                             <div className="gauge-fill omega" style={{
-                                width: `${tugPosition > 0 ? Math.min(50, tugPosition * 20) : 0}%`,
+                                width: `${tugPosition > 0 ? (Math.abs(tugPosition) / maxPull) * 50 : 0}%`,
                                 left: '50%',
                                 opacity: tugPosition > 0 ? 0.6 + (Math.abs(tugPosition) / maxPull) * 0.4 : 0,
                                 filter: `blur(${Math.abs(tugPosition) / maxPull * 4}px)`
@@ -159,12 +150,19 @@ const MatchCard = ({ match }) => {
                             }}></div>
                         </div>
                     </div>
-                    <div className="vs-label" style={{
-                        color: tugPosition < 0 ? '#00ff41' : tugPosition > 0 ? '#ff2a2a' : 'inherit',
-                        transform: `scale(${1 + Math.abs(tugPosition / maxPull) * 0.2})`
-                    }}>
-                        {getSymmetryStatus()}
-                    </div>
+                    {isFinished ? (
+                        <div className="lead-tag won">
+                            {isWinnerA ? `${teamA?.name || 'ALPHA'} WON` : (isWinnerB ? `${teamB?.name || 'OMEGA'} WON` : 'MATCH FINISHED')}
+                        </div>
+                    ) : (
+                        tugPosition !== 0 ? (
+                            <div className={`lead-tag ${tugPosition < 0 ? 'alpha' : 'omega'}`}>
+                                {tugPosition < 0 ? `${teamA?.name || 'ALPHA'} LEADING +${Math.abs(tugPosition)}` : `${teamB?.name || 'OMEGA'} LEADING +${tugPosition}`}
+                            </div>
+                        ) : (
+                            <div className="lead-tag neutral">DEADLOCK MAINTAINED</div>
+                        )
+                    )}
                 </div>
 
                 {/* Team Omega Side */}
@@ -175,18 +173,7 @@ const MatchCard = ({ match }) => {
                     </div>
                     <div className="team-name-large" style={{ color: colorB }}>{teamB?.name || '---'}</div>
                     <div className="team-progress-mini">
-                        <div className="progress-segments">
-                            {Array.from({ length: 5 }).map((_, i) => {
-                                const wonByB = pullHistory[i] === 'B';
-                                const wonByA = pullHistory[i] === 'A';
-                                return (
-                                    <div
-                                        key={i}
-                                        className={`segment ${wonByB ? 'lit success' : wonByA ? 'lit fail' : ''}`}
-                                    ></div>
-                                );
-                            })}
-                        </div>
+                        {/* Segments removed for smooth tracking */}
                     </div>
                 </div>
             </div>
@@ -202,7 +189,7 @@ const MatchCard = ({ match }) => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

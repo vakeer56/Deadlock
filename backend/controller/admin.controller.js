@@ -10,7 +10,7 @@ exports.createMatch = async (req, res) => {
     try {
         const match = await DeadlockMatch.create({
             tugPosition: 0,
-            maxPull: 5,
+            maxPull: 4,
             status: "lobby"
         });
 
@@ -312,9 +312,9 @@ exports.terminateSession = async (req, res) => {
             deadlockResult: 'pending',
             currentRound: 'pending',
             currentQuestionIndex: 0,
-            questions: []
+            questions: [],
+            isActive: true
         });
-
         res.json({
             success: true,
             message: "Session terminated. All systems reset to baseline."
@@ -440,75 +440,14 @@ exports.startAllDeadlockMatches = async (req, res) => {
             });
         }
 
-        // --- Authoritative Question Seeding ---
-        await DeadlockQuestion.deleteMany({});
-        const questions = await DeadlockQuestion.insertMany([
-            {
-                "title": "Subtract Two Numbers",
-                "description": "Given two integers, print their difference (first minus second).",
-                "difficulty": "easy",
-                "testCases": [
-                    { "input": "10 4", "output": "6" },
-                    { "input": "7 12", "output": "-5" }
-                ]
-            },
-            {
-                "title": "Check Even or Odd",
-                "description": "Given an integer, print 'Even' if it is even, otherwise print 'Odd'.",
-                "difficulty": "easy",
-                "testCases": [
-                    { "input": "6", "output": "Even" },
-                    { "input": "9", "output": "Odd" }
-                ]
-            },
-            {
-                "title": "Sum of First N Numbers",
-                "description": "Given an integer N, print the sum of the first N natural numbers.",
-                "difficulty": "easy",
-                "testCases": [
-                    { "input": "5", "output": "15" },
-                    { "input": "10", "output": "55" }
-                ]
-            },
-            {
-                "title": "Reverse a Number",
-                "description": "Given an integer, print the reverse of the number.",
-                "difficulty": "easy",
-                "testCases": [
-                    { "input": "123", "output": "321" },
-                    { "input": "405", "output": "504" }
-                ]
-            },
-            {
-                "title": "Count Digits",
-                "description": "Given an integer, print the number of digits in it.",
-                "difficulty": "easy",
-                "testCases": [
-                    { "input": "12345", "output": "5" },
-                    { "input": "9", "output": "1" }
-                ]
-            },
-            {
-                "title": "Prime Number Check",
-                "description": "Given an integer, print 'YES' if it is prime, otherwise print 'NO'.",
-                "difficulty": "medium",
-                "testCases": [
-                    { "input": "7", "output": "YES" },
-                    { "input": "4", "output": "NO" }
-                ]
-            },
-            {
-                "title": "Palindrome String",
-                "description": "Given a string, print 'YES' if it is a palindrome, otherwise print 'NO'.",
-                "difficulty": "medium",
-                "testCases": [
-                    { "input": "racecar", "output": "YES" },
-                    { "input": "hello", "output": "NO" }
-                ]
-            }
-        ]);
-
-        const questionIds = questions.map(q => q._id);
+        // Get all available questions from the pool
+        const allQuestions = await DeadlockQuestion.find({});
+        if (allQuestions.length < 30) {
+            return res.status(500).json({
+                success: false,
+                message: "Not enough questions in the database pool (need at least 30)."
+            });
+        }
 
         const matches = [];
 
@@ -518,7 +457,6 @@ exports.startAllDeadlockMatches = async (req, res) => {
             const teamBId = teamBIds[i];
 
             // CLEANUP: Force-delete ALL previous matches (ongoing OR finished) for these teams
-            // This prevents "false entries" from previous games appearing in the tracker
             await DeadlockMatch.deleteMany({
                 $or: [
                     { teamA: { $in: [teamAId, teamBId] } },
@@ -535,14 +473,18 @@ exports.startAllDeadlockMatches = async (req, res) => {
                 { currentRound: "deadlock" }
             );
 
+            // Shuffled subset for this specific match (e.g., 50 random questions)
+            const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+            const selectedQuestionIds = shuffled.slice(0, 50).map(q => q._id);
+
             const match = await DeadlockMatch.create({
                 teamA: teamAId,
                 teamB: teamBId,
-                questions: questionIds,
+                questions: selectedQuestionIds,
                 currentQuestionIndex: 0,
                 tugPosition: 0,
-                maxPull: 100,
-                status: "ongoing" // Set as ongoing by default to match devSeed flow
+                maxPull: 4, // New tug-of-war range: -4 to 4
+                status: "ongoing"
             });
 
             matches.push(match);
@@ -550,12 +492,13 @@ exports.startAllDeadlockMatches = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "Deadlock matches initialized successfully with questions",
+            message: "Deadlock matches initialized successfully with random questions",
             totalMatches: matches.length,
             matches
         });
 
     } catch (err) {
+        console.error("Batch match failed:", err);
         res.status(500).json({
             success: false,
             message: "Failed to initialize matches",

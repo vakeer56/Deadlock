@@ -20,6 +20,7 @@ const DeadlockPage = () => {
     const [match, setMatch] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isDismissed, setIsDismissed] = useState(false);
     const [tugPosition, setTugPosition] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState(null);
 
@@ -27,32 +28,11 @@ const DeadlockPage = () => {
     const [teamId, setTeamId] = useState(null);
 
     // Submission State
-    const getBoilerplate = (lang, inputCount = 2) => {
-        const inputsPy = inputCount > 1
-            ? `a, b = map(int, input().split()) # Update this for ${inputCount} inputs`
-            : `n = int(input())`;
-
-        const inputsCpp = inputCount > 1
-            ? `    int a, b; // Update for ${inputCount} inputs\n    cin >> a >> b;`
-            : `    int n;\n    cin >> n;`;
-
-        const inputsJava = inputCount > 1
-            ? `        if (sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt(); // Update for ${inputCount} inputs\n        }`
-            : `        if (sc.hasNextInt()) {\n            int n = sc.nextInt();\n        }`;
-
-        const templates = {
-            python: `# HOW TO READ INPUT:\n${inputsPy}\n\n# Write your code here\n`,
-            cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n${inputsCpp}\n\n    // Write your code here\n\n    return 0;\n}\n`,
-            java: `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n\n${inputsJava}\n\n        // Write your code here\n    }\n}\n`
-        };
-        return templates[lang] || "";
-    };
-
     const [language, setLanguage] = useState("python");
     const [codes, setCodes] = useState({
-        python: getBoilerplate("python"),
-        cpp: getBoilerplate("cpp"),
-        java: getBoilerplate("java")
+        python: "",
+        cpp: "",
+        java: ""
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionResult, setSubmissionResult] = useState(null);
@@ -90,7 +70,6 @@ const DeadlockPage = () => {
             }
             lastQuestionIndex.current = data.currentQuestionIndex;
 
-            // Optional: Only set state if something actually changed to avoid heavy re-renders
             setMatch(prev => {
                 if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
                 return data;
@@ -108,7 +87,11 @@ const DeadlockPage = () => {
 
             setLoading(false);
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to load match");
+            if (err.response && err.response.status === 404) {
+                setIsDismissed(true);
+            } else {
+                setError(err.response?.data?.message || "Failed to load match");
+            }
             setLoading(false);
         } finally {
             isFetching.current = false;
@@ -125,16 +108,12 @@ const DeadlockPage = () => {
 
     useEffect(() => {
         if (!currentQuestion) return;
-        const firstInput = currentQuestion.testCases?.[0]?.input || "";
-        const inputLines = firstInput.trim().split('\n');
-        const inputCount = inputLines.length > 1
-            ? inputLines.length
-            : firstInput.trim().split(/\s+/).length;
 
+        // Use templates from the question object
         setCodes({
-            python: getBoilerplate("python", inputCount),
-            cpp: getBoilerplate("cpp", inputCount),
-            java: getBoilerplate("java", inputCount)
+            python: currentQuestion.templates?.python || "",
+            cpp: currentQuestion.templates?.cpp || "",
+            java: currentQuestion.templates?.java || ""
         });
     }, [currentQuestion?._id]);
 
@@ -202,6 +181,10 @@ const DeadlockPage = () => {
     if (error) return <div className="error-screen">{error}</div>;
     if (!match) return null;
 
+    if (isDismissed) {
+        return <DismissedView />;
+    }
+
     if (match.status === 'finished') {
         return <ResultView match={match} teamId={teamId} userTeam={localStorage.getItem('team')} />;
     }
@@ -221,7 +204,7 @@ const DeadlockPage = () => {
 
             <TugOfWarArena
                 tugPosition={tugPosition}
-                maxPull={match.maxPull || 5}
+                maxPull={match.maxPull || 4}
             />
 
             <div className="game-lower-section">
@@ -330,6 +313,51 @@ const ResultView = ({ match, teamId, userTeam }) => {
                         END GAME SESSION
                     </a>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const DismissedView = () => {
+    const navigate = useNavigate();
+    const [countdown, setCountdown] = useState(5);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    navigate('/deadlock/lobby');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [navigate]);
+
+    return (
+        <div className="v2-emergency-fix dismissed-view">
+            <div className="cyber-grid-bg"></div>
+            <div className="dismissed-container">
+                <div className="warning-icon">⚠️</div>
+                <h1 className="result-title winner-text title-v2 warning-text">
+                    MATCH DISMISSED BY ADMIN
+                </h1>
+                <p className="result-subtitle">THE TERMINAL SESSION HAS BEEN REVOKED BY CENTRAL CONTROL.</p>
+
+                <div className="dismissed-status">
+                    <div className="status-pulse"></div>
+                    <span>Returning to lobby safely in {countdown}s...</span>
+                </div>
+
+                <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${(countdown / 5) * 100}%` }}></div>
+                </div>
+
+                <button className="cyber-btn winner-btn" onClick={() => navigate('/deadlock/lobby')}>
+                    RETURN TO LOBBY NOW
+                </button>
             </div>
         </div>
     );

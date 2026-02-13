@@ -2,7 +2,7 @@ import React from 'react';
 
 const TugWar = ({ tugPosition, maxPull, teamA, teamB }) => {
 
-    const safeMaxPull = maxPull || 5;
+    const safeMaxPull = maxPull || 4;
     const percentage = Math.min(100, Math.max(0, ((tugPosition + safeMaxPull) / (2 * safeMaxPull)) * 100));
 
     // Determine visual state

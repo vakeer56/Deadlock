@@ -1,11 +1,11 @@
 import React from 'react';
 
-const Rope = ({ offsetPercentage }) => {
+const Rope = ({ offsetVw }) => {
     return (
         <div
             className="rope-container"
             style={{
-                transform: `translate(calc(-50% + ${offsetPercentage}%), -50%)`
+                transform: `translate(calc(-50% + ${offsetVw}vw), -50%)`
             }}
         >
             <div className="rope-line"></div>

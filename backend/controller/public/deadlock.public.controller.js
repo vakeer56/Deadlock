@@ -10,6 +10,14 @@ PLAYER SUBMIT ANSWER
 POST /api/public/deadlock/submit
 ----------------------------------------------------
 */
+const { validateSubmission } = require("../../utils/solutionRunner");
+
+/*
+----------------------------------------------------
+PLAYER SUBMIT ANSWER
+POST /api/public/deadlock/submit
+----------------------------------------------------
+*/
 exports.submitDeadlock = async (req, res) => {
     try {
         const { matchId, teamId, questionId, language, code } = req.body;
@@ -33,15 +41,13 @@ exports.submitDeadlock = async (req, res) => {
         }
 
         // Get CURRENT question from match (AUTHORITATIVE)
-        const currentQuestionId =
-            match.questions[match.currentQuestionIndex];
+        const currentQuestionId = match.questions[match.currentQuestionIndex];
 
-        // NEW: Validate correct question submit
+        // Validate correct question submit
         if (currentQuestionId.toString() !== questionId) {
-            return res.status(409).json({ // 409 Conflict
+            return res.status(409).json({
                 message: "Question mismatch or already solved. Please refresh.",
-                currentQuestionId: currentQuestionId,
-                yourQuestionId: questionId
+                currentQuestionIndex: match.currentQuestionIndex
             });
         }
 
@@ -53,25 +59,18 @@ exports.submitDeadlock = async (req, res) => {
         let verdict = "AC";
         let error = null;
 
-        // Run code against all test cases
+        // Run code against all test cases (1 visible, 2 hidden)
         for (const testCase of question.testCases) {
-            const result = await runCode({
+            const validation = await validateSubmission({
                 language,
                 code,
-                input: testCase.input
+                question,
+                testCase
             });
 
-            if (result.run.stderr) {
-                verdict = "RUNTIME_ERROR";
-                error = result.run.stderr.trim();
-                break;
-            }
-
-            const output = result.run.stdout.trim();
-            const expected = testCase.output.trim();
-
-            if (output !== expected) {
-                verdict = "WRONG_ANSWER";
+            if (!validation.success) {
+                verdict = validation.verdict;
+                error = validation.error || `Failed on ${testCase.isHidden ? 'hidden' : 'visible'} test case`;
                 break;
             }
         }
@@ -84,7 +83,8 @@ exports.submitDeadlock = async (req, res) => {
             language,
             verdict,
             answer: code,
-            isCorrect: verdict === "AC"
+            isCorrect: verdict === "AC",
+            error: error
         });
 
         // If failed -> stop here
@@ -96,7 +96,7 @@ exports.submitDeadlock = async (req, res) => {
             });
         }
 
-        //Move tug
+        // Move tug
         if (isTeamA) {
             match.tugPosition -= 1; // Alpha pulls negative
             match.scoreA += 1;
@@ -107,33 +107,48 @@ exports.submitDeadlock = async (req, res) => {
             match.pullHistory.push('B');
         }
 
-        // Advance question (Linear, 5 questions total)
+        // Win condition check (-3 or 3)
         let winnerId = null, loserId = null;
-        match.currentQuestionIndex += 1;
+        const maxPull = match.maxPull || 4;
 
-        // Check if 5 questions have been completed
-        if (match.currentQuestionIndex >= 5) {
+        if (match.tugPosition <= -maxPull) {
+            winnerId = match.teamA;
+            loserId = match.teamB;
             match.status = "finished";
+        } else if (match.tugPosition >= maxPull) {
+            winnerId = match.teamB;
+            loserId = match.teamA;
+            match.status = "finished";
+        } else {
+            // Advance to next question only if not finished
+            match.currentQuestionIndex += 1;
 
-            // Determine winner based on scores
+            // DYNAMIC DIFFICULTY SHIFTING
+            // Map absolute tugPosition to difficulty
+            // 0 -> Medium, 1 -> Medium, 2 -> Hard
+            const absPos = Math.abs(match.tugPosition);
+            let nextDifficulty = "medium";
+            if (absPos >= 2) nextDifficulty = "hard";
+            else if (absPos === 0) nextDifficulty = "easy"; // Let's start with Easy at 0 for better flow, or Medium if preferred
 
-            if (match.scoreA > match.scoreB) {
-                winnerId = match.teamA;
-                loserId = match.teamB;
-            } else if (match.scoreB > match.scoreA) {
-                winnerId = match.teamB;
-                loserId = match.teamA;
+            // Fetch a random question of the target difficulty that hasn't been used in this match
+            const usedQuestionIds = match.questions.slice(0, match.currentQuestionIndex);
+            const nextQuestion = await DeadlockQuestion.findOne({
+                difficulty: nextDifficulty,
+                _id: { $nin: usedQuestionIds }
+            }).skip(Math.floor(Math.random() * 10)); // Add some randomness from the pool
+
+            if (nextQuestion) {
+                // Insert the new question into the match's pool at the current index
+                // This ensures both teams see this same new question
+                match.questions.set(match.currentQuestionIndex, nextQuestion._id);
             } else {
-                // In case of a tie, the team closer to their side wins
-                if (match.tugPosition > 0) {
-                    winnerId = match.teamA;
-                    loserId = match.teamB;
-                } else {
-                    winnerId = match.teamB;
-                    loserId = match.teamA;
-                }
+                // Fallback: use an existing one if pool is somehow empty (unlikely with 150)
+                console.warn(`No unused ${nextDifficulty} questions found, skipping replacement.`);
             }
+        }
 
+        if (match.status === "finished") {
             match.winner = winnerId;
             match.loser = loserId;
 

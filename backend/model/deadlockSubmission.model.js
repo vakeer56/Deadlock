@@ -28,6 +28,9 @@ const deadlockSubmissionSchema = new mongoose.Schema({
     },
     isCorrect: {
         type: Boolean
+    },
+    error: {
+        type: String
     }
 }, { timestamps: true });
 

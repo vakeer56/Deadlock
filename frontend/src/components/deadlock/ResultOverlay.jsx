@@ -14,9 +14,9 @@ const ResultOverlay = React.memo(({ result, onClose }) => {
 
     return (
         <div className="result-overlay-backdrop" onClick={onClose}>
-            <div className="result-card" onClick={(e) => e.stopPropagation()}>
+            <div className={`result-card verdict-${result.verdict} ${result.verdict === 'CONFLICT' ? 'result-card-warning' : ''}`} onClick={(e) => e.stopPropagation()}>
                 {result.verdict === 'AC' && (
-                    <div className="verdict-AC">ACCEPTED</div>
+                    <div className="verdict-AC" data-text="ACCEPTED">ACCEPTED</div>
                 )}
                 {result.verdict === 'WRONG_ANSWER' && (
                     <div className="verdict-WA">WRONG ANSWER</div>
@@ -25,7 +25,7 @@ const ResultOverlay = React.memo(({ result, onClose }) => {
                     <div className="verdict-RE">RUNTIME ERROR</div>
                 )}
                 {result.verdict === 'CONFLICT' && (
-                    <div className="verdict-CONFLICT">TOO SLOW!</div>
+                    <div className="verdict-CONFLICT" data-text="TOO SLOW!">TOO SLOW!</div>
                 )}
                 {result.verdict === 'ERROR' && (
                     <div className="verdict-RE">ERROR</div>
