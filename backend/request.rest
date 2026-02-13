@@ -57,7 +57,7 @@ PATCH http://localhost:5000/api/admin/deadlock/finish
 Content-Type: application/json
 
 {
-    "winner": "698e4a2d5a116a5a6b844c37"
+    "winner": "698ecc05cf59a6c3c55e1c42"
 }
 ###
 

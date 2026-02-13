@@ -345,7 +345,7 @@ exports.createTeam = async (req, res) => {
         const team = await Team.create({
             name,
             members: members || [],
-            currentRound: "deadlock",
+            currentRound: "pending",
             deadlockResult: "pending"
         });
 
