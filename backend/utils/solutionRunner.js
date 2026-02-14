@@ -3,7 +3,10 @@ const { runCode } = require('./piston');
 /**
  * Wraps user code into a driver script for verification.
  */
-const wrapCode = ({ language, code, functionName }) => {
+const wrapCode = ({ language, code, functionName, parameters }) => {
+    // Python and JS are dynamic, so they handle polymorphic inputs gracefully.
+    // We only need strict generation for C++ and Java.
+
     if (language === 'python') {
         return `
 import json
@@ -61,7 +64,99 @@ ${code}
 `;
     }
 
+    // --- STATIC TYPED LANGUAGES ---
+
+    // Helper to determine call signature
+    const getCallLogic = (lang, params) => {
+        // params example: "int n" or "string s" or "int a, int b"
+        // If params isn't provided (legacy), default to empty string
+        const pList = params ? params.split(',').map(p => p.trim()) : [];
+
+        // C++ Generation
+        if (lang === 'cpp') {
+            let preparations = "";
+            let args = [];
+
+            pList.forEach((p, idx) => {
+                const varName = `arg${idx}`;
+                if (p.startsWith("int ") || p === "int") {
+                    preparations += `        int ${varName} = stoi(parts[${idx}]);\n`;
+                    args.push(varName);
+                } else if (p.startsWith("string ") || p.includes("string")) {
+                    // Remove surrounding quotes from input part if present
+                    preparations += `        string ${varName} = parts[${idx}];\n`;
+                    preparations += `        if (${varName}.size() >= 2 && ${varName}.front() == '"' && ${varName}.back() == '"') {\n`;
+                    preparations += `            ${varName} = ${varName}.substr(1, ${varName}.size() - 2);\n`;
+                    preparations += `        }\n`;
+                    args.push(varName);
+                } else if (p.includes("vector") && p.includes("int")) {
+                    // Basic vector<int> parsing: "[1,2,3]" -> vector
+                    preparations += `        vector<int> ${varName};\n`;
+                    preparations += `        string raw${idx} = parts[${idx}];\n`;
+                    preparations += `        if (raw${idx}.size() >= 2 && raw${idx}.front() == '[' && raw${idx}.back() == ']') raw${idx} = raw${idx}.substr(1, raw${idx}.size() - 2);\n`;
+                    preparations += `        stringstream ss${idx}(raw${idx});\n`;
+                    preparations += `        string segment${idx};\n`;
+                    preparations += `        while(getline(ss${idx}, segment${idx}, ',')) { if(!segment${idx}.empty()) ${varName}.push_back(stoi(segment${idx})); }\n`;
+                    args.push(varName);
+                }
+                // Add more types as needed (char, etc)
+                else if (p.startsWith("char ")) {
+                    preparations += `        char ${varName} = parts[${idx}][1];\n`; // "'a'" -> 'a'
+                    args.push(varName);
+                }
+                else {
+                    // Fallback for unknown types - ensure code compiles by guessing int? No, safer to skip or defaulting.
+                    // But for now, let's assume valid seeder data.
+                }
+            });
+
+            return {
+                prep: preparations,
+                call: `sol.${functionName}(${args.join(', ')})`
+            };
+        }
+
+        // Java Generation
+        if (lang === 'java') {
+            let preparations = "";
+            let args = [];
+
+            pList.forEach((p, idx) => {
+                const varName = `arg${idx}`;
+                if (p.startsWith("int ") || p === "int") {
+                    preparations += `            int ${varName} = Integer.parseInt(parts[${idx}].trim());\n`;
+                    args.push(varName);
+                } else if (p.startsWith("String ") || p.includes("String")) {
+                    preparations += `            String ${varName} = parts[${idx}];\n`;
+                    preparations += `            if (${varName}.length() >= 2 && ${varName}.startsWith("\\"") && ${varName}.endsWith("\\"")) {\n`;
+                    preparations += `                ${varName} = ${varName}.substring(1, ${varName}.length() - 1);\n`;
+                    preparations += `            }\n`;
+                    args.push(varName);
+                } else if (p.includes("int[]")) {
+                    // Basic int[] parsing: "[1,2,3]"
+                    preparations += `            String raw${idx} = parts[${idx}].trim();\n`;
+                    preparations += `            if (raw${idx}.startsWith("[") && raw${idx}.endsWith("]")) raw${idx} = raw${idx}.substring(1, raw${idx}.length() - 1);\n`;
+                    preparations += `            String[] spl${idx} = raw${idx}.length() > 0 ? raw${idx}.split(",") : new String[0];\n`;
+                    preparations += `            int[] ${varName} = new int[spl${idx}.length];\n`;
+                    preparations += `            for(int i=0; i<spl${idx}.length; i++) ${varName}[i] = Integer.parseInt(spl${idx}[i].trim());\n`;
+                    args.push(varName);
+                }
+                else if (p.startsWith("char ")) {
+                    preparations += `            char ${varName} = parts[${idx}].charAt(1);\n`;
+                    args.push(varName);
+                }
+            });
+            return {
+                prep: preparations,
+                call: `sol.${functionName}(${args.join(', ')})`
+            };
+        }
+
+        return { prep: "", call: "" };
+    };
+
     if (language === 'cpp') {
+        const { prep, call } = getCallLogic('cpp', parameters['cpp']);
         return `
 #include <iostream>
 #include <vector>
@@ -70,6 +165,29 @@ ${code}
 #include <sstream>
 
 using namespace std;
+
+// Helper to print vectors
+template<typename T>
+ostream& operator<<(ostream& os, const vector<T>& v) {
+    os << "[";
+    for (size_t i = 0; i < v.size(); ++i) {
+        os << v[i];
+        if (i != v.size() - 1) os << ",";
+    }
+    os << "]";
+    return os;
+}
+
+// Helper to print vector of strings (with quotes)
+ostream& operator<<(ostream& os, const vector<string>& v) {
+    os << "[";
+    for (size_t i = 0; i < v.size(); ++i) {
+        os << "\\"" << v[i] << "\\"";
+        if (i != v.size() - 1) os << ",";
+    }
+    os << "]";
+    return os;
+}
 
 ${code}
 
@@ -89,33 +207,8 @@ int main() {
     }
 
     try {
-        if (parts.size() == 0) {
-            // No params - assume no arg call
-        } else if (parts.size() == 1) {
-            if (parts[0][0] == '"') {
-                string s = parts[0].substr(1, parts[0].length()-2);
-                cout << boolalpha << sol.${functionName}(s) << endl;
-            } else if (parts[0][0] == '[') {
-                // Vector heuristic (simplified for now)
-                cout << "UNSUPPORTED_VECTOR_INPUT_CPP" << endl;
-            } else {
-                try {
-                    int n = stoi(parts[0]);
-                    cout << boolalpha << sol.${functionName}(n) << endl;
-                } catch(...) {
-                    cout << boolalpha << sol.${functionName}(parts[0]) << endl;
-                }
-            }
-        } else if (parts.size() == 2) {
-            try {
-                int a = stoi(parts[0]);
-                int b = stoi(parts[1]);
-                cout << boolalpha << sol.${functionName}(a, b) << endl;
-            } catch(...) {
-                // Try strings
-                cout << boolalpha << sol.${functionName}(parts[0], parts[1]) << endl;
-            }
-        }
+${prep}
+        cout << boolalpha << ${call} << endl;
     } catch (exception& e) {
         cerr << e.what() << endl;
         return 1;
@@ -127,12 +220,35 @@ int main() {
     }
 
     if (language === 'java') {
+        const { prep, call } = getCallLogic('java', parameters['java']);
         return `
 import java.util.*;
-
-${code}
+import java.util.stream.*;
 
 public class Main {
+    // Helper to print arrays/lists recursively
+    public static void printResult(Object obj) {
+        if (obj == null) {
+            System.out.println("null");
+        } else if (obj instanceof int[]) {
+            System.out.println(Arrays.toString((int[]) obj));
+        } else if (obj instanceof String[]) {
+            System.out.print("[");
+            String[] arr = (String[]) obj;
+            for (int i = 0; i < arr.length; i++) {
+                System.out.print("\\"" + arr[i] + "\\"");
+                if (i < arr.length - 1) System.out.print(",");
+            }
+            System.out.println("]");
+        } else if (obj instanceof Object[]) {
+            System.out.println(Arrays.deepToString((Object[]) obj));
+        } else if (obj instanceof List) {
+            System.out.println(obj.toString());
+        } else {
+            System.out.println(obj);
+        }
+    }
+
     public static void main(String[] args) {
         try {
             Solution sol = new Solution();
@@ -147,28 +263,17 @@ public class Main {
                 parts = new String[]{inputData};
             }
 
-            if (parts.length == 1) {
-                try {
-                    int n = Integer.parseInt(parts[0]);
-                    System.out.println(sol.${functionName}(n));
-                } catch(Exception e) {
-                    System.out.println(sol.${functionName}(parts[0]));
-                }
-            } else if (parts.length == 2) {
-                try {
-                    int a = Integer.parseInt(parts[0].trim());
-                    int b = Integer.parseInt(parts[1].trim());
-                    System.out.println(sol.${functionName}(a, b));
-                } catch(Exception e) {
-                     System.out.println(sol.${functionName}(parts[0].trim(), parts[1].trim()));
-                }
-            }
+${prep}
+            printResult(${call});
+            
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
 }
+
+${code}
 `;
     }
 
@@ -179,10 +284,13 @@ public class Main {
  * Executes code against a test case and returns the result.
  */
 exports.validateSubmission = async ({ language, code, question, testCase }) => {
+    // Ensure parameters are passed; if legacy call without params in question object, fallback might break for C++/Java
+    // But since this is specific to Deadlock, question object typically has parameters.
     const fullCode = wrapCode({
         language,
         code,
-        functionName: question.functionName
+        functionName: question.functionName,
+        parameters: question.parameters || {}
     });
 
     const result = await runCode({
@@ -213,6 +321,11 @@ exports.validateSubmission = async ({ language, code, question, testCase }) => {
         try {
             expected = JSON.stringify(JSON.parse(expected.replace(/'/g, '"')));
         } catch (e) { }
+    }
+
+    // Special handling for strings: if output is quoted like "value" but expected is value
+    if (output.startsWith('"') && output.endsWith('"') && !expected.startsWith('"')) {
+        output = output.slice(1, -1);
     }
 
     if (output === expected) {
