@@ -191,8 +191,9 @@ exports.validateSubmission = async ({ language, code, question, testCase }) => {
         input: testCase.input
     });
 
-    if (result.run.stderr) {
-        return { success: false, verdict: "RUNTIME_ERROR", error: result.run.stderr.trim() };
+    // Check for non-zero exit code as the primary indicator of Runtime Error
+    if (result.run.code !== 0) {
+        return { success: false, verdict: "RUNTIME_ERROR", error: result.run.stderr.trim() || "Runtime Error" };
     }
 
     let output = result.run.stdout.trim();

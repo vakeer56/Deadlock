@@ -256,7 +256,7 @@ const ResultView = ({ match, teamId, userTeam }) => {
                     <h1 className="result-title winner-text title-v2">
                         MISSION ACCOMPLISHED
                     </h1>
-                    <p className="result-subtitle">CONGRATULATIONS, TEAM {teamName}. THE CORE IS SECURED.</p>
+                    <p className="result-subtitle">CONGRATULATIONS, TEAM {teamName}. YOU QUALIFIED FOR NEXT ROUND.</p>
 
                     <div className="mission-details table-v2">
                         <div className="detail-line">
