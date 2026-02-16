@@ -1,6 +1,8 @@
 const axios = require("axios");
+const ThrottleQueue = require("./throttleQueue");
 
 const PISTON_URL = "https://wandbox.org/api/compile.json";
+const wandboxQueue = new ThrottleQueue(2); // 2 requests per second
 
 const languageMap = {
     python: "cpython-3.10.15",
@@ -18,12 +20,15 @@ exports.runCode = async ({ language, code, input }) => {
         throw new Error("Unsupported language");
     }
 
-    const response = await axios.post(PISTON_URL, {
-        compiler,
-        code,
-        stdin: input,
-        save: false
-    });
+    // Wrap the axios call in the throttle queue
+    const response = await wandboxQueue.add(() =>
+        axios.post(PISTON_URL, {
+            compiler,
+            code,
+            stdin: input,
+            save: false
+        })
+    );
 
     const data = response.data;
 
