@@ -510,11 +510,95 @@ exports.startAllDeadlockMatches = async (req, res) => {
 };
 
 /* ----------------------------------------------------
+GET MATCH BY TEAM NAME
+---------------------------------------------------- */
+exports.getMatchByTeamName = async (req, res) => {
+    try {
+        const { name } = req.params;
+        const team = await Team.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+
+        if (!team) {
+            return res.status(404).json({ success: false, message: "Team not found" });
+        }
+
+        const match = await DeadlockMatch.findOne({
+            $or: [{ teamA: team._id }, { teamB: team._id }],
+            status: { $in: ["ongoing", "lobby"] }
+        }).populate("teamA teamB", "name");
+
+        if (!match) {
+            return res.status(404).json({ success: false, message: "No active match found for this team" });
+        }
+
+        res.json({
+            success: true,
+            match
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/* ----------------------------------------------------
+SHUFFLE CURRENT QUESTION
+---------------------------------------------------- */
+exports.shuffleCurrentQuestion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const match = await DeadlockMatch.findById(id);
+
+        if (!match || match.status !== "ongoing") {
+            return res.status(404).json({ success: false, message: "Active match not found" });
+        }
+
+        // Determine target difficulty based on current tugPosition
+        const absPos = Math.abs(match.tugPosition);
+        let difficulty = "medium";
+        if (absPos >= 3) difficulty = "hard";
+        else if (absPos === 0) difficulty = "easy";
+
+        const usedQuestionIds = match.questions || [];
+
+        // Find a new question of the same difficulty
+        const count = await DeadlockQuestion.countDocuments({
+            difficulty,
+            _id: { $nin: usedQuestionIds }
+        });
+
+        if (count === 0) {
+            return res.status(404).json({ success: false, message: "No alternative questions of this difficulty found" });
+        }
+
+        const randomSkip = Math.floor(Math.random() * count);
+        const newQuestion = await DeadlockQuestion.findOne({
+            difficulty,
+            _id: { $nin: usedQuestionIds }
+        }).skip(randomSkip);
+
+        if (!newQuestion) {
+            return res.status(404).json({ success: false, message: "Failed to fetch new question" });
+        }
+
+        // Replace the question at the current index
+        match.questions[match.currentQuestionIndex] = newQuestion._id;
+        await match.save();
+
+        res.json({
+            success: true,
+            message: "Question shuffled successfully",
+            newQuestionTitle: newQuestion.title
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/* ----------------------------------------------------
 CHECK TEAM EXISTENCE
 ---------------------------------------------------- */
 exports.checkTeam = async (req, res) => {
     try {
-        const { name } = req.params;
+        const name = req.params.name || req.body.name;
 
         // Case-insensitive search
         const team = await Team.findOne({
@@ -543,5 +627,57 @@ exports.checkTeam = async (req, res) => {
             message: "Failed to check team",
             error: error.message
         });
+    }
+};
+
+/* ----------------------------------------------------
+PROMOTE TEAM (FORCE WIN)
+---------------------------------------------------- */
+exports.promoteTeam = async (req, res) => {
+    try {
+        const { matchId, winnerTeamId } = req.body;
+        const match = await DeadlockMatch.findById(matchId);
+
+        if (!match || match.status === "finished") {
+            return res.status(404).json({ success: false, message: "Active match not found" });
+        }
+
+        let loserTeamId = null;
+        if (match.teamA.toString() === winnerTeamId) {
+            loserTeamId = match.teamB;
+        } else if (match.teamB.toString() === winnerTeamId) {
+            loserTeamId = match.teamA;
+        } else {
+            return res.status(400).json({ success: false, message: "Winner team not part of this match" });
+        }
+
+        // Finalize match
+        match.status = "finished";
+        match.winner = winnerTeamId;
+        match.loser = loserTeamId;
+
+        // Push the momentum to the winning side
+        match.tugPosition = (match.teamA.toString() === winnerTeamId) ? -4 : 4;
+
+        await match.save();
+
+        // Update team records
+        await Team.findByIdAndUpdate(winnerTeamId, {
+            currentRound: "crack-the-code",
+            deadlockResult: "win"
+        });
+
+        await Team.findByIdAndUpdate(loserTeamId, {
+            currentRound: "eliminated",
+            deadlockResult: "lose"
+        });
+
+        res.json({
+            success: true,
+            message: "Team promoted successfully",
+            winnerId: winnerTeamId
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

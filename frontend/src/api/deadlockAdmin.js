@@ -115,4 +115,34 @@ export const startAllMatches = async (teamAIds, teamBIds) => {
     }
 };
 
+export const getMatchByTeamName = async (name) => {
+    try {
+        const response = await api.get(`/match/team/${name}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching match by team name:", error);
+        throw error;
+    }
+};
+
+export const shuffleQuestion = async (matchId) => {
+    try {
+        const response = await api.post(`/match/${matchId}/shuffle`);
+        return response.data;
+    } catch (error) {
+        console.error("Error shuffling question:", error);
+        throw error;
+    }
+};
+
+export const promoteTeam = async (matchId, winnerTeamId) => {
+    try {
+        const response = await api.post('/match/promote', { matchId, winnerTeamId });
+        return response.data;
+    } catch (error) {
+        console.error("Error promoting team:", error);
+        throw error;
+    }
+};
+
 export default api;

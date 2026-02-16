@@ -7,6 +7,8 @@ import CrackCodeAdmin from "./pages/CrackCodeAdmin";
 import DeadlockPage from './pages/DeadlockPage';
 import DeadlockRedirect from './pages/DeadlockRedirect';
 import DeadlockTracker from './pages/DeadlockTracker';
+import ShuffleQuestion from './pages/ShuffleQuestion';
+import PromoteTeam from './pages/PromoteTeam';
 import './App.css';
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
         <Route path="/" element={<Deadlock />} />
         <Route path="/admin/deadlock" element={<AdminPage />} />
         <Route path="/admin/deadlock-tracker" element={<DeadlockTracker />} />
+        <Route path="/admin/deadlock/shuffle" element={<ShuffleQuestion />} />
+        <Route path="/admin/deadlock/promote" element={<PromoteTeam />} />
         <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
         <Route path="/admin/crack-code" element={<CrackCodeAdmin />} />
       </Routes>

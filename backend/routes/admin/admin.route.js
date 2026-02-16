@@ -12,7 +12,10 @@ const {
     getMatches,
     terminateSession,
     startAllDeadlockMatches,
-    checkTeam
+    getMatchByTeamName,
+    shuffleCurrentQuestion,
+    checkTeam,
+    promoteTeam
 } = require("../../controller/admin.controller.js");
 
 const { solveProblem } = require("../../controller/deadlock.controller.js");
@@ -23,8 +26,12 @@ router.post("/solve", solveProblem);
 router.post("/deadlock/start-all", startAllDeadlockMatches);
 router.post("/terminate", terminateSession);
 router.post("/team", createTeam);
-router.post("/team/check", checkTeam);
+// New routes for Shuffle and Promote feature
+router.get("/match/team/:name", getMatchByTeamName);
+router.post("/match/:id/shuffle", shuffleCurrentQuestion);
+router.post("/match/promote", promoteTeam);
 
+router.post("/team/check", checkTeam);
 router.get("/team/check/:name", checkTeam);
 
 router.patch("/match/:id/update-teams", updateTeams);
