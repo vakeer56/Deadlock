@@ -41,6 +41,23 @@ exports.submitDeadlock = async (req, res) => {
         }
 
         // Get CURRENT question from match (AUTHORITATIVE)
+        // SELF-HEALING: If index is out of bounds (e.g. from previous bug), fetch a new question immediately
+        if (!match.questions || match.questions.length <= match.currentQuestionIndex) {
+            console.warn(`[Self-Healing] Match ${matchId} out of sync (Index ${match.currentQuestionIndex} >= Length ${match.questions.length}). repairing...`);
+
+            // Fetch any valid question to fill the gap
+            const count = await DeadlockQuestion.countDocuments();
+            const randomSkip = Math.floor(Math.random() * count);
+            const rescueQuestion = await DeadlockQuestion.findOne().skip(randomSkip);
+
+            if (rescueQuestion) {
+                match.questions.push(rescueQuestion._id);
+                await match.save(); // Save immediately to persist fix
+                console.log(`[Self-Healing] Match repaired. Added question ${rescueQuestion._id}`);
+            } else {
+                return res.status(500).json({ message: "Game State Error: Database empty, cannot repair match." });
+            }
+        }
         const currentQuestionId = match.questions[match.currentQuestionIndex];
 
         // Validate correct question submit
@@ -107,9 +124,9 @@ exports.submitDeadlock = async (req, res) => {
             match.pullHistory.push('B');
         }
 
-        // Win condition check (-3 or 3)
-        let winnerId = null, loserId = null;
+        // Win condition check (-maxPull or +maxPull)
         const maxPull = match.maxPull || 4;
+        let winnerId = null, loserId = null;
 
         if (match.tugPosition <= -maxPull) {
             winnerId = match.teamA;
@@ -119,32 +136,64 @@ exports.submitDeadlock = async (req, res) => {
             winnerId = match.teamB;
             loserId = match.teamA;
             match.status = "finished";
-        } else {
+        }
+
+        if (match.status !== "finished") {
             // Advance to next question only if not finished
             match.currentQuestionIndex += 1;
 
             // DYNAMIC DIFFICULTY SHIFTING
             // Map absolute tugPosition to difficulty
-            // 0 -> Medium, 1 -> Medium, 2 -> Hard
+            // 0 -> Easy, 1-2 -> Medium, 3 -> Hard
             const absPos = Math.abs(match.tugPosition);
             let nextDifficulty = "medium";
-            if (absPos >= 2) nextDifficulty = "hard";
-            else if (absPos === 0) nextDifficulty = "easy"; // Let's start with Easy at 0 for better flow, or Medium if preferred
+            if (absPos >= 3) nextDifficulty = "hard";
+            else if (absPos === 0) nextDifficulty = "easy";
 
-            // Fetch a random question of the target difficulty that hasn't been used in this match
-            const usedQuestionIds = match.questions.slice(0, match.currentQuestionIndex);
-            const nextQuestion = await DeadlockQuestion.findOne({
-                difficulty: nextDifficulty,
-                _id: { $nin: usedQuestionIds }
-            }).skip(Math.floor(Math.random() * 10)); // Add some randomness from the pool
+            // SAFETY: Check if we already have a question at this index
+            if (match.questions.length <= match.currentQuestionIndex) {
+                // Fetch a random question of the target difficulty that hasn't been used in this match
+                const usedQuestionIds = match.questions;
 
-            if (nextQuestion) {
-                // Insert the new question into the match's pool at the current index
-                // This ensures both teams see this same new question
-                match.questions.set(match.currentQuestionIndex, nextQuestion._id);
-            } else {
-                // Fallback: use an existing one if pool is somehow empty (unlikely with 150)
-                console.warn(`No unused ${nextDifficulty} questions found, skipping replacement.`);
+                // Count available
+                const count = await DeadlockQuestion.countDocuments({
+                    difficulty: nextDifficulty,
+                    _id: { $nin: usedQuestionIds }
+                });
+
+                let nextQuestion = null;
+                if (count > 0) {
+                    const randomSkip = Math.floor(Math.random() * count);
+                    nextQuestion = await DeadlockQuestion.findOne({
+                        difficulty: nextDifficulty,
+                        _id: { $nin: usedQuestionIds }
+                    }).skip(randomSkip);
+                }
+
+                // FALLBACK: If strictly filtered pool is empty, relax constraints
+                if (!nextQuestion) {
+                    const countAny = await DeadlockQuestion.countDocuments({ difficulty: nextDifficulty });
+                    if (countAny > 0) {
+                        const randomSkip = Math.floor(Math.random() * countAny);
+                        nextQuestion = await DeadlockQuestion.findOne({ difficulty: nextDifficulty }).skip(randomSkip);
+                    }
+                }
+
+                // FINAL FALLBACK: Any random question
+                if (!nextQuestion) {
+                    const countAll = await DeadlockQuestion.countDocuments();
+                    if (countAll > 0) {
+                        const randomSkip = Math.floor(Math.random() * countAll);
+                        nextQuestion = await DeadlockQuestion.findOne().skip(randomSkip);
+                    }
+                }
+
+                if (nextQuestion) {
+                    match.questions.push(nextQuestion._id);
+                } else {
+                    console.error("CRITICAL: No questions available in database!");
+                    match.status = "finished";
+                }
             }
         }
 
@@ -153,15 +202,19 @@ exports.submitDeadlock = async (req, res) => {
             match.loser = loserId;
 
             // Update team records
-            await Team.findByIdAndUpdate(winnerId, {
-                currentRound: "crack-the-code",
-                deadlockResult: "win"
-            });
+            if (winnerId) {
+                await Team.findByIdAndUpdate(winnerId, {
+                    currentRound: "crack-the-code",
+                    deadlockResult: "win"
+                });
+            }
 
-            await Team.findByIdAndUpdate(loserId, {
-                currentRound: "eliminated",
-                deadlockResult: "lose"
-            });
+            if (loserId) {
+                await Team.findByIdAndUpdate(loserId, {
+                    currentRound: "eliminated",
+                    deadlockResult: "lose"
+                });
+            }
         }
 
         await match.save();

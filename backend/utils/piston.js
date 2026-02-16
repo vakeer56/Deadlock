@@ -1,27 +1,39 @@
 const axios = require("axios");
 
-const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
+const PISTON_URL = "https://wandbox.org/api/compile.json";
 
 const languageMap = {
-    python: { language: "python", version: "3.10.0" },
-    js: { language: "javascript", version: "18.15.0" },
-    java: { language: "java", version: "15.0.2" },
-    cpp: { language: "cpp", version: "10.2.0" }
+    python: "cpython-3.10.15",
+    js: "nodejs-18.20.4",
+    javascript: "nodejs-18.20.4",
+    java: "openjdk-jdk-21+35",
+    cpp: "gcc-11.4.0",
+    "c++": "gcc-11.4.0"
 };
 
 exports.runCode = async ({ language, code, input }) => {
-    const runtime = languageMap[language];
+    const compiler = languageMap[language];
 
-    if (!runtime) {
-    throw new Error("Unsupported language");
+    if (!compiler) {
+        throw new Error("Unsupported language");
     }
 
     const response = await axios.post(PISTON_URL, {
-    language: runtime.language,
-    version: runtime.version,
-    files: [{ content: code }],
-    stdin: input
+        compiler,
+        code,
+        stdin: input,
+        save: false
     });
 
-    return response.data;
+    const data = response.data;
+
+    // Normalize Wandbox response to match the Piston-like structure expected by solutionRunner.js
+    // Wandbox returns status (exit code), program_output (combined stdout), program_error (stderr), compiler_error
+    return {
+        run: {
+            stdout: data.program_output || "",
+            stderr: (data.program_error || "") + (data.compiler_error || ""),
+            code: parseInt(data.status) || 0
+        }
+    };
 };

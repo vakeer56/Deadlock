@@ -473,17 +473,19 @@ exports.startAllDeadlockMatches = async (req, res) => {
                 { currentRound: "deadlock" }
             );
 
-            // Shuffled subset for this specific match (e.g., 50 random questions)
-            const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-            const selectedQuestionIds = shuffled.slice(0, 50).map(q => q._id);
+            // Start with only ONE random EASY question.
+            // The dynamic difficulty logic in solve endpoint will fetch the next medium/hard 
+            // questions based on tugPosition.
+            const easyQuestions = allQuestions.filter(q => q.difficulty === "easy");
+            const firstQuestion = easyQuestions[Math.floor(Math.random() * easyQuestions.length)];
 
             const match = await DeadlockMatch.create({
                 teamA: teamAId,
                 teamB: teamBId,
-                questions: selectedQuestionIds,
+                questions: [firstQuestion._id],
                 currentQuestionIndex: 0,
                 tugPosition: 0,
-                maxPull: 4, // New tug-of-war range: -4 to 4
+                maxPull: 4,
                 status: "ongoing"
             });
 

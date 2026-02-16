@@ -20,9 +20,9 @@ if __name__ == "__main__":
     try:
         input_data = sys.stdin.read().strip()
         if "|" in input_data:
-            parts = [json.loads(p.strip()) for p in input_data.split("|")]
+            parts = [json.loads(p.strip().replace("'", '"')) for p in input_data.split("|")]
         else:
-            parts = [json.loads(input_data)] if input_data else []
+            parts = [json.loads(input_data.replace("'", '"'))] if input_data else []
             
         result = sol.${functionName}(*parts)
         
@@ -48,10 +48,11 @@ ${code}
         const sol = new Solution();
         const inputData = fs.readFileSync(0, 'utf8').trim();
         let parts = [];
-        if (inputData.includes('|')) {
-            parts = inputData.split('|').map(p => JSON.parse(p.trim()));
-        } else if (inputData) {
-            parts = [JSON.parse(inputData)];
+        const cleanInput = inputData.replace(/'/g, '"');
+        if (cleanInput.includes('|')) {
+            parts = cleanInput.split('|').map(p => JSON.parse(p.trim()));
+        } else if (cleanInput) {
+            parts = [JSON.parse(cleanInput)];
         }
         
         const result = sol.${functionName}(...parts);

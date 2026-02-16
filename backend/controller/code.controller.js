@@ -1,4 +1,5 @@
-const axios = require('axios');
+const Team = require("../model/team.model");
+const { runCode } = require("../utils/piston");
 
 /*
     POST /api/public/code/execute
@@ -23,7 +24,7 @@ const axios = require('axios');
     }
 */
 
-const PISTON_API_URL = "https://emkc.org/api/v2/piston/execute";
+// Migrated to runCode utility using Wandbox
 
 const CrackCodeSession = require("../model/CrackCodeSession");
 const CrackCodeAttempt = require("../model/CrackCodeAttempt");
@@ -45,27 +46,26 @@ const executeCode = async (req, res) => {
         }
 
         // 1. Find Session
-        const session = await CrackCodeSession.findOne({ teamId });
+        const mongoose = require("mongoose");
+        const queryTeamId = mongoose.Types.ObjectId.isValid(teamId) ? new mongoose.Types.ObjectId(teamId) : teamId;
+
+        const session = await CrackCodeSession.findOne({ teamId: queryTeamId });
         if (!session) {
+            console.log("CTC Session not found for teamId:", teamId);
             return res.status(404).json({
                 message: "Session not found for this team"
             });
         }
 
-        // 2. Execute Code
-        const payload = {
+        // 2. Execute Code (using Wandbox via runCode utility)
+        const result = await runCode({
             language,
-            version,
-            files,
-            stdin: stdin || "",
-            args: args || []
-        };
+            code: files[0].content,
+            input: stdin || ""
+        });
 
-        const response = await axios.post(PISTON_API_URL, payload);
-        const { run } = response.data;
-
-        const output = run.stdout;
-        const error = run.stderr;
+        const output = result.run.stdout;
+        const error = result.run.stderr;
 
         // 3. Save Attempt
         // We'll increment attempt count regardless of success/error for now, or maybe just success?
