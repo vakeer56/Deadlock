@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './DeadlockLobby.css';
+import useSecurity from '../hooks/useSecurity';
 
 const DeadlockLobby = ({ onMatchFound }) => {
+    const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
+    const { security } = useSecurity(teamName);
+
     const navigate = useNavigate();
     const [statusLoading, setStatusLoading] = useState(true);
     const [teamStatus, setTeamStatus] = useState(null);

@@ -9,7 +9,9 @@ import DeadlockRedirect from './pages/DeadlockRedirect';
 import DeadlockTracker from './pages/DeadlockTracker';
 import ShuffleQuestion from './pages/ShuffleQuestion';
 import PromoteTeam from './pages/PromoteTeam';
+import AdminSecurity from './pages/AdminSecurity';
 import './App.css';
+
 
 function App() {
   return (
@@ -29,7 +31,9 @@ function App() {
         <Route path="/admin/deadlock/promote" element={<PromoteTeam />} />
         <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
         <Route path="/admin/crack-code" element={<CrackCodeAdmin />} />
+        <Route path="/admin/security" element={<AdminSecurity />} />
       </Routes>
+
     </Router>
   );
 }

@@ -1,9 +1,20 @@
 import React from 'react';
 import Editor from "@monaco-editor/react";
 
-const CodePanel = ({ code, setCode, language, setLanguage, isLocked }) => {
+import useSecurity from '../../hooks/useSecurity';
 
-    // Check if monaco is available, if not fallback (handled by library usually)
+const CodePanel = ({ code, setCode, language, setLanguage, isLocked }) => {
+    const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
+    const { security, reportAction } = useSecurity(teamName);
+
+    const handlePaste = (e) => {
+        if (security.disableCopyPaste) {
+            e.preventDefault();
+            reportAction('ALERT', 'Attempted to paste code into editor');
+            alert("PASTING IS NOT ALLOWED! ACTION LOGGED.");
+        }
+    };
+
 
     return (
         <div className="code-panel">
@@ -21,20 +32,28 @@ const CodePanel = ({ code, setCode, language, setLanguage, isLocked }) => {
                 </select>
                 {isLocked && <span style={{ color: '#ff4757' }}>LOCKED</span>}
             </div>
-            <Editor
-                height="100%"
-                language={language}
-                theme="vs-dark"
-                value={code}
-                onChange={setCode}
-                options={{
-                    readOnly: isLocked,
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    scrollBeyondLastLine: false,
-                    padding: { top: 10 }
-                }}
-            />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <Editor
+                    height="100%"
+                    language={language}
+                    theme="vs-dark"
+                    value={code}
+                    onChange={setCode}
+                    options={{
+                        readOnly: isLocked,
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        scrollBeyondLastLine: false,
+                        padding: { top: 10 },
+                        contextmenu: !security.disableCopyPaste && !security.disableTextSelection,
+                        copySelection: !security.disableCopyPaste,
+                        links: false,
+                        dragAndDrop: false,
+                        selectionClipboard: false
+                    }}
+                />
+            </div>
+
         </div>
     );
 };

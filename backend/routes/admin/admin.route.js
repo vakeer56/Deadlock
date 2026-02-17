@@ -19,9 +19,14 @@ const {
 } = require("../../controller/admin.controller.js");
 
 const { solveProblem } = require("../../controller/deadlock.controller.js");
+const { getSecuritySettings, updateSecuritySettings } = require("../../controller/admin/security.controller.js");
 
+
+router.get("/security-settings", getSecuritySettings);
+router.post("/security-settings", updateSecuritySettings);
 
 router.post("/match", createMatch);
+
 router.post("/solve", solveProblem);
 router.post("/deadlock/start-all", startAllDeadlockMatches);
 router.post("/terminate", terminateSession);

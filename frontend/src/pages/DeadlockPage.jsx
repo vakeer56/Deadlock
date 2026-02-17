@@ -11,8 +11,14 @@ import WinnerBackground from '../components/deadlock/WinnerBackground';
 import LoserBackground from '../components/deadlock/LoserBackground';
 import '../components/deadlock/deadlock.css';
 
+import useSecurity from '../hooks/useSecurity';
+
 const DeadlockPage = () => {
+    const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
+    const { security, reportAction } = useSecurity(teamName);
+
     const context = JSON.parse(localStorage.getItem('deadlockContext') || '{}');
+
     const matchId = context.matchId;
     const navigate = useNavigate();
 
@@ -83,6 +89,12 @@ const DeadlockPage = () => {
             const storedTeamId = localStorage.getItem('teamId');
             if (storedTeamId) {
                 setTeamId(storedTeamId);
+                // Sync teamName if missing or update it
+                if (data.teamA._id === storedTeamId) {
+                    localStorage.setItem('teamName', data.teamA.name);
+                } else if (data.teamB._id === storedTeamId) {
+                    localStorage.setItem('teamName', data.teamB.name);
+                }
             }
 
             setLoading(false);

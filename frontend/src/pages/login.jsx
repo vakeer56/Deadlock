@@ -153,6 +153,7 @@ const Deadlock = () => {
     if (teamExists && existingTeamData) {
       showNotification(`WELCOME BACK, ${existingTeamData.name}`, "success");
       localStorage.setItem("teamId", existingTeamData._id);
+      localStorage.setItem("teamName", existingTeamData.name);
       setTimeout(initRedirect, 1000);
       return;
     }
@@ -176,6 +177,7 @@ const Deadlock = () => {
       if (response.data.success) {
         showNotification("DEPLOYMENT SUCCESSFUL.", "success");
         localStorage.setItem("teamId", response.data.team._id);
+        localStorage.setItem("teamName", response.data.team.name);
         setTimeout(initRedirect, 1000);
       }
     } catch (error) {

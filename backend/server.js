@@ -12,7 +12,57 @@ const codeRoutes = require("./routes/public/code.route");
 const deadlockRoute = require("./routes/public/deadlock.routes");
 
 
+const http = require("http");
+const { Server } = require("socket.io");
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+// Attach io to app to use in controllers
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log(">>> [SOCKET] User connected:", socket.id);
+
+  socket.on("join-admin", () => {
+    socket.join("admin-room");
+    console.log(">>> [SOCKET] Admin joined room:", socket.id);
+  });
+
+  socket.on("join-team", (teamName) => {
+    // Standardize to use team identifiers consistent throughout
+    socket.join(`team-${teamName}`);
+    console.log(`>>> [SOCKET] Team [${teamName}] joined room:`, socket.id);
+  });
+
+  socket.on("report-illegal-action", (data) => {
+    console.log(">>> [SECURITY] Illegal action reported:", data);
+    io.to("admin-room").emit("new-log", {
+      ...data,
+      timestamp: new Date(),
+      type: "ALERT"
+    });
+  });
+
+  socket.on("report-tab-switch", (data) => {
+    console.log(">>> [SECURITY] Tab switch reported:", data);
+    io.to("admin-room").emit("new-log", {
+      ...data,
+      timestamp: new Date(),
+      type: "TAB_SWITCH"
+    });
+  });
+
+  socket.on("disconnect", () => {
+    console.log(">>> [SOCKET] User disconnected:", socket.id);
+  });
+});
+
 
 app.use(cors({
   origin: "*",
@@ -21,7 +71,7 @@ app.use(cors({
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Deadlock backend running");
+  res.send("Deadlock backend running with Socket.io");
 });
 
 // --------------------------------Routes--------------------------------
@@ -45,7 +95,7 @@ mongoose
   .then(() => {
     console.log("MongoDB connected");
 
-    app.listen(PORT, "0.0.0.0", () => {
+    server.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
     });
   })
@@ -54,3 +104,4 @@ mongoose
     console.error(err.message);
     process.exit(1);
   });
+

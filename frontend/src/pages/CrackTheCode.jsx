@@ -202,8 +202,14 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
 
 // --- Main Component ---
 
+import useSecurity from '../hooks/useSecurity';
+
 const CrackTheCode = () => {
+    const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
+    const { security, reportAction } = useSecurity(teamName);
+
     const [language, setLanguage] = useState('python');
+
     const [codeMap, setCodeMap] = useState(DEFAULT_CODE);
     const [activeTestCase, setActiveTestCase] = useState(0);
 
@@ -780,7 +786,8 @@ const RightPanel = React.memo(({
                     </button>
                 </div>
             </div>
-            <div className="monaco-wrapper">
+            <div className="monaco-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
+
                 <Editor
                     height="100%"
                     language={language === 'cpp' ? 'cpp' : language}
@@ -798,12 +805,17 @@ const RightPanel = React.memo(({
                         suggestOnTriggerCharacters: true,
                         acceptSuggestionOnEnter: "on",
                         tabCompletion: "on",
-                        wordBasedSuggestions: true,
+                        contextmenu: !security.disableCopyPaste && !security.disableTextSelection,
+                        copySelection: !security.disableCopyPaste,
+                        links: false,
+                        dragAndDrop: false,
+                        selectionClipboard: false
                     }}
                 />
             </div>
 
             <div className="output-section">
+
                 <div className="console-box">
                     <div style={{ color: '#aaa', marginBottom: '5px', fontSize: '0.85rem' }}>Console Output:</div>
                     <pre style={{ margin: 0, color: '#e0e0e0' }}>
