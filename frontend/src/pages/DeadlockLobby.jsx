@@ -1,4 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useSecurity from '../hooks/useSecurity';
+import './DeadlockLobby.css';
 
 const DeadlockLobby = ({ onMatchFound }) => {
     const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
