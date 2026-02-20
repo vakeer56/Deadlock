@@ -45,6 +45,19 @@ const executeCode = async (req, res) => {
             });
         }
 
+        // --- GLITCH ENFORCEMENT ---
+        const GameState = require("../model/gameState.model");
+        const state = await GameState.findOne({ key: 'GLOBAL_STATE' });
+        if (state && state.glitchActiveUntil && new Date() < new Date(state.glitchActiveUntil)) {
+            if (state.firstBloodTeamId && state.firstBloodTeamId.toString() !== teamId) {
+                return res.status(403).json({
+                    success: false,
+                    message: "SYSTEM GLITCH ACTIVE - ACCESS DENIED"
+                });
+            }
+        }
+        // --------------------------
+
         // 1. Find Session
         const mongoose = require("mongoose");
         const queryTeamId = mongoose.Types.ObjectId.isValid(teamId) ? new mongoose.Types.ObjectId(teamId) : teamId;

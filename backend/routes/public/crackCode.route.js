@@ -98,6 +98,19 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    // --- GLITCH ENFORCEMENT ---
+    const GameState = require("../../model/gameState.model");
+    const state = await GameState.findOne({ key: 'GLOBAL_STATE' });
+    if (state && state.glitchActiveUntil && new Date() < new Date(state.glitchActiveUntil)) {
+      if (state.firstBloodTeamId && state.firstBloodTeamId.toString() !== teamId) {
+        return res.status(403).json({
+          success: false,
+          message: "SYSTEM GLITCH ACTIVE - ACCESS DENIED"
+        });
+      }
+    }
+    // --------------------------
+
     // Default to true if not provided (to maintain backward compatibility for manual submits)
     const isCorrect = providedIsCorrect !== undefined ? providedIsCorrect : true;
 

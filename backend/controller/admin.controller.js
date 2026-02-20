@@ -2,6 +2,7 @@ const DeadlockMatch = require("../model/deadlock.model");
 const Team = require("../model/team.model");
 const DeadlockQuestion = require("../model/deadlockQuestion");
 const DeadlockSubmission = require("../model/deadlockSubmission.model");
+const GameState = require("../model/gameState.model");
 
 /* ----------------------------------------------------
 CREATE DEADLOCK MATCH
@@ -235,6 +236,14 @@ exports.finishMatch = async (req, res) => {
             message: "Match finished and teams updated",
             match
         });
+
+        // ATOMIC FIRST BLOOD ASSIGNMENT
+        // Only assign if firstBloodTeamId is null.
+        await GameState.updateOne(
+            { key: 'GLOBAL_STATE', firstBloodTeamId: null },
+            { $set: { firstBloodTeamId: winner } },
+            { upsert: true } // Create if doesn't exist
+        );
     } catch (err) {
         res.status(500).json({
             success: false,
@@ -671,6 +680,14 @@ exports.promoteTeam = async (req, res) => {
             currentRound: "eliminated",
             deadlockResult: "lose"
         });
+
+        // ATOMIC FIRST BLOOD ASSIGNMENT
+        // Only assign if firstBloodTeamId is null.
+        await GameState.updateOne(
+            { key: 'GLOBAL_STATE', firstBloodTeamId: null },
+            { $set: { firstBloodTeamId: winnerTeamId } },
+            { upsert: true } // Create if doesn't exist
+        );
 
         res.json({
             success: true,

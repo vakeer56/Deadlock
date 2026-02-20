@@ -81,6 +81,7 @@ app.use("/api/admin/crack-code", crackCodeRoutes);
 app.use("/api/public/crack-code", publicCrackCodeRoutes);
 // app.use("/api/public/deadlock", publicDeadlockRoutes);
 app.use("/api/public/code", codeRoutes);
+app.use("/api/public/glitch", require("./routes/public/glitch.routes"));
 
 //-------------------------------Dev Route -------------------------------------
 if (process.env.NODE_ENV !== "production") {

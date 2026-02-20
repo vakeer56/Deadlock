@@ -143,7 +143,7 @@ const DigitalRain = React.memo(({ isFirst }) => {
     );
 });
 
-const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, onExpire }) => {
+const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, onExpire, glitchStatus, onActivateGlitch }) => {
     const [secondsLeft, setSecondsLeft] = React.useState(initialTime);
 
     // Sync initialTime if it changes (e.g. on lobby transition)
@@ -174,6 +174,10 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
         return () => clearInterval(timerId);
     }, [isGameStarted, submissionResult, onExpire]);
 
+    const teamId = localStorage.getItem('teamId');
+    const isOwner = glitchStatus?.ownerId === teamId;
+    const canActivate = isOwner && !glitchStatus?.glitchUsed;
+
     return (
         <header className="main-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h1 style={{
@@ -185,16 +189,42 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
                 fontWeight: '800',
                 margin: 0
             }}>Crack The Code</h1>
-            <div className="timer" style={{
-                fontSize: '1.5em',
-                fontWeight: 'bold',
-                marginRight: '20px',
-                fontFamily: 'monospace'
-            }}>
-                <span style={{ color: 'aliceblue' }}>Time Left: </span>
-                <span style={{ color: secondsLeft > 1200 ? '#28a745' : (secondsLeft > 300 ? '#e67300' : '#dc3545') }}>
-                    {formatTime(secondsLeft)}
-                </span>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                {canActivate && (
+                    <button
+                        className="glitch-activate-btn"
+                        onClick={onActivateGlitch}
+                        style={{
+                            background: 'red',
+                            color: 'white',
+                            border: '2px solid #ff0000',
+                            padding: '8px 16px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            animation: 'pulse 1s infinite'
+                        }}
+                    >
+                        ⚡ INITIATE CYBER-ATTACK
+                    </button>
+                )}
+                {glitchStatus?.active && (
+                    <div style={{ color: 'red', fontWeight: 'bold', animation: 'blink 0.5s infinite' }}>
+                        ⚠️ SYSTEM UNDER ATTACK ⚠️
+                    </div>
+                )}
+
+                <div className="timer" style={{
+                    fontSize: '1.5em',
+                    fontWeight: 'bold',
+                    marginRight: '20px',
+                    fontFamily: 'monospace'
+                }}>
+                    <span style={{ color: 'aliceblue' }}>Time Left: </span>
+                    <span style={{ color: secondsLeft > 1200 ? '#28a745' : (secondsLeft > 300 ? '#e67300' : '#dc3545') }}>
+                        {formatTime(secondsLeft)}
+                    </span>
+                </div>
             </div>
         </header>
     );
@@ -203,6 +233,8 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
 // --- Main Component ---
 
 import useSecurity from '../hooks/useSecurity';
+
+import GlitchOverlay from '../components/crack/GlitchOverlay';
 
 const CrackTheCode = () => {
     const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
@@ -224,6 +256,62 @@ const CrackTheCode = () => {
     const [testResults, setTestResults] = useState({});
     const [hiddenTestResult, setHiddenTestResult] = useState(null);
     const [lastValidatedCode, setLastValidatedCode] = useState("");
+
+    // GLITCH STATE
+    const [glitchStatus, setGlitchStatus] = useState({
+        active: false,
+        ownerId: null,
+        glitchUsed: false
+    });
+
+    // --- GLITCH LOGIC ---
+    useEffect(() => {
+        const fetchGlitchStatus = async () => {
+            try {
+                const res = await fetch('/api/public/glitch/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    setGlitchStatus({
+                        active: data.active,
+                        ownerId: data.ownerId,
+                        glitchUsed: data.glitchUsed,
+                        remainingTime: data.remainingTime
+                    });
+                }
+            } catch (err) {
+                console.error("Glitch poll error:", err);
+            }
+        };
+
+        fetchGlitchStatus(); // Initial check
+        const interval = setInterval(fetchGlitchStatus, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleActivateGlitch = async () => {
+        const teamId = localStorage.getItem("teamId");
+        if (!teamId) return;
+
+        if (!window.confirm("WARNING: INITIATING CYBER-ATTACK WILL DISRUPT ALL OPPONENTS FOR 15 SECONDS. EXECUTE?")) return;
+
+        try {
+            const res = await fetch('/api/public/glitch/activate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teamId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("CYBER-ATTACK INITIATED. TARGETS LOCKED.");
+            } else {
+                alert("ACTIVATION FAILED: " + data.message);
+            }
+        } catch (err) {
+            console.error("Glitch activation error:", err);
+            alert("SYSTEM ERROR");
+        }
+    };
+    // --------------------
 
     // --- Callback Stability Ref Pattern ---
     // This prevents high-frequency renders (keystrokes) from resetting the timer
@@ -628,13 +716,25 @@ ${otherCode}
         );
     }
 
+    const teamId = localStorage.getItem('teamId');
+    const isVictim = glitchStatus?.active && glitchStatus?.ownerId !== teamId;
+
     return (
         <div className="crack-page">
+            {isVictim && (
+                <GlitchOverlay
+                    ownerName={glitchStatus?.ownerId ? "RIVAL TEAM" : "UNKNOWN"}
+                    expiresAt={null} // Timer handled inside overlay or just visual
+                />
+            )}
+
             <GameHeader
                 initialTime={timeLeft}
                 isGameStarted={isGameStarted}
                 submissionResult={submissionResult}
                 onExpire={handleExpire}
+                glitchStatus={glitchStatus}
+                onActivateGlitch={handleActivateGlitch}
             />
 
             <div className="crack-container">

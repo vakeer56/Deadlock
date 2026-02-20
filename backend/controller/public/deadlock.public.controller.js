@@ -207,6 +207,15 @@ exports.submitDeadlock = async (req, res) => {
                     currentRound: "crack-the-code",
                     deadlockResult: "win"
                 });
+
+                // ATOMIC FIRST BLOOD ASSIGNMENT
+                // Only assign if firstBloodTeamId is null.
+                const GameState = require("../../model/gameState.model");
+                await GameState.updateOne(
+                    { key: 'GLOBAL_STATE', firstBloodTeamId: null },
+                    { $set: { firstBloodTeamId: winnerId } },
+                    { upsert: true } // Create if doesn't exist
+                );
             }
 
             if (loserId) {
