@@ -5,6 +5,7 @@ const Team = require("../../model/team.model");
 const CrackCodeSession = require("../../model/CrackCodeSession");
 const CrackCodeSubmission = require("../../model/CrackCodeSubmission");
 const CrackCodeAttempt = require("../../model/CrackCodeAttempt");
+const GameState = require("../../model/gameState.model");
 
 /*
   POST /admin/crack-code/start
@@ -87,19 +88,27 @@ router.get("/winner-info", async (req, res) => {
   }
 });
 
-/*
-  DELETE /admin/crack-code/reset
-  
-  - Admin clears all active Crack the Code sessions and data
-*/
 router.delete("/reset", async (req, res) => {
   try {
+    // 1. Purge Crack Code Specific Data ONLY
     await CrackCodeSession.deleteMany({});
     await CrackCodeSubmission.deleteMany({});
     await CrackCodeAttempt.deleteMany({});
 
+    // 2. Reset Glitch Availability (Keep the First Blood winner, but let them use the skill again)
+    await GameState.updateOne(
+      { key: 'GLOBAL_STATE' },
+      {
+        $set: {
+          glitchUsed: false,
+          glitchActiveUntil: null
+        }
+      },
+      { upsert: true }
+    );
+
     return res.json({
-      message: "All Crack the Code sessions, submissions, and attempts have been purged. Systems reset.",
+      message: "All Crack the Code sessions, submissions, and attempts have been purged. First Blood winner preserved; Glitch skill reset.",
     });
   } catch (error) {
     console.error("CrackCode RESET error:", error);

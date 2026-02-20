@@ -238,11 +238,11 @@ exports.finishMatch = async (req, res) => {
         });
 
         // ATOMIC FIRST BLOOD ASSIGNMENT
-        // Only assign if firstBloodTeamId is null.
+        // Ensure state exists, then assign if firstBloodTeamId is null.
+        await GameState.get();
         await GameState.updateOne(
             { key: 'GLOBAL_STATE', firstBloodTeamId: null },
-            { $set: { firstBloodTeamId: winner } },
-            { upsert: true } // Create if doesn't exist
+            { $set: { firstBloodTeamId: winner } }
         );
     } catch (err) {
         res.status(500).json({
@@ -307,6 +307,10 @@ exports.getMatches = async (req, res) => {
     }
 };
 
+const CrackCodeSession = require("../model/CrackCodeSession");
+const CrackCodeSubmission = require("../model/CrackCodeSubmission");
+const CrackCodeAttempt = require("../model/CrackCodeAttempt");
+
 /* ----------------------------------------------------
 TERMINATE SESSION (NUCLEAR RESET)
 ---------------------------------------------------- */
@@ -316,7 +320,25 @@ exports.terminateSession = async (req, res) => {
         await DeadlockMatch.deleteMany({});
         await DeadlockSubmission.deleteMany({});
 
-        // 2. Deep reset all teams to factory defaults for the round
+        // 2. Clear all Crack the Code data
+        await CrackCodeSession.deleteMany({});
+        await CrackCodeSubmission.deleteMany({});
+        await CrackCodeAttempt.deleteMany({});
+
+        // 3. Reset Global Game State (Clear First Blood)
+        await GameState.updateOne(
+            { key: 'GLOBAL_STATE' },
+            {
+                $set: {
+                    firstBloodTeamId: null,
+                    glitchUsed: false,
+                    glitchActiveUntil: null
+                }
+            },
+            { upsert: true }
+        );
+
+        // 4. Deep reset all teams to factory defaults for the round
         await Team.updateMany({}, {
             deadlockResult: 'pending',
             currentRound: 'pending',
@@ -324,9 +346,10 @@ exports.terminateSession = async (req, res) => {
             questions: [],
             isActive: true
         });
+
         res.json({
             success: true,
-            message: "Session terminated. All systems reset to baseline."
+            message: "Session terminated. All systems reset to baseline including Crack Code data and Global State."
         });
     } catch (err) {
         res.status(500).json({
@@ -503,7 +526,7 @@ exports.startAllDeadlockMatches = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "Deadlock matches initialized successfully with random questions",
+            message: `Initialization complete. Matches: ${matches.length}`,
             totalMatches: matches.length,
             matches
         });
@@ -682,11 +705,11 @@ exports.promoteTeam = async (req, res) => {
         });
 
         // ATOMIC FIRST BLOOD ASSIGNMENT
-        // Only assign if firstBloodTeamId is null.
+        // Ensure state exists, then assign if firstBloodTeamId is null.
+        await GameState.get();
         await GameState.updateOne(
             { key: 'GLOBAL_STATE', firstBloodTeamId: null },
-            { $set: { firstBloodTeamId: winnerTeamId } },
-            { upsert: true } // Create if doesn't exist
+            { $set: { firstBloodTeamId: winnerTeamId } }
         );
 
         res.json({

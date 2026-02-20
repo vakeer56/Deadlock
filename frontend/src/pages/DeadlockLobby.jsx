@@ -22,21 +22,20 @@ const DeadlockLobby = ({ onMatchFound }) => {
 
         const pollDeadlockStatus = async () => {
             try {
-                // 1. Check Team Status
-                const teamRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/team-status/${teamId}`);
+                // 1. Check Team Status (with cache busting)
+                const teamRes = await fetch(`/api/public/crack-code/team-status/${teamId}?cb=${Date.now()}`);
                 if (teamRes.ok) {
                     const data = await teamRes.json();
                     setTeamStatus(data);
 
-                    // If already promoted, trigger transition (though this shouldn't happen in this lobby)
-                    if (data.currentRound === 'crack-the-code') {
-                        window.location.href = '/crackTheCode';
+                    if (data.currentRound === 'crack-the-code' || data.currentRound === 'eliminated') {
+                        navigate('/crackTheCode');
                         return;
                     }
                 }
 
                 // 2. Check Match Assignment
-                const matchRes = await fetch(`http://${window.location.hostname}:5000/api/public/deadlock/match/team/${teamId}`);
+                const matchRes = await fetch(`/api/public/deadlock/match/team/${teamId}?cb=${Date.now()}`);
                 if (matchRes.ok) {
                     const data = await matchRes.json();
 

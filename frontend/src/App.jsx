@@ -13,6 +13,7 @@ import AdminSecurity from './pages/AdminSecurity';
 import AdminLayout from './components/layouts/AdminLayout';
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import AdminLogin from './pages/admin/AdminLogin';
+import { AdminProvider } from './context/AdminContext';
 import './App.css';
 
 
@@ -25,7 +26,11 @@ function App() {
 
         {/* Protected Admin Zone */}
         <Route element={<ProtectedAdminRoute />}>
-          <Route element={<AdminLayout />}>
+          <Route element={
+            <AdminProvider>
+              <AdminLayout />
+            </AdminProvider>
+          }>
             <Route path="/admin/dashboard" element={<AdminPage />} />
             <Route path="/admin/security" element={<AdminSecurity />} />
             <Route path="/admin/crack-code" element={<CrackCodeAdmin />} />
@@ -40,12 +45,12 @@ function App() {
         <Route path="/login" element={<Deadlock />} />
         <Route path="/crackTheCode" element={<CrackTheCode />} />
         <Route path="/deadlock/game" element={<DeadlockPage />} />
+        <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
         <Route path="/deadlock" element={<DeadlockRedirect />} />
+
         {/* Guardrail: Redirect any other /deadlock/* paths to Home */}
         <Route path="/deadlock/*" element={<Navigate to="/" replace />} />
         <Route path="/" element={<Deadlock />} />
-
-        <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
 
 
       </Routes>

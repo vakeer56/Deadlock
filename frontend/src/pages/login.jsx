@@ -59,7 +59,7 @@ const Deadlock = () => {
       }
 
       try {
-        const response = await axios.get(`http://${window.location.hostname}:5000/api/admin/deadlock/team/check/${debouncedTeamName}`);
+        const response = await axios.get(`/api/admin/deadlock/team/check/${debouncedTeamName}`);
 
         if (response.data.success) {
           if (response.data.exists) {
@@ -133,7 +133,7 @@ const Deadlock = () => {
     setMembers(updated);
   };
 
-  const initRedirect = () => {
+  const initRedirect = (targetPath = "/deadlock/lobby") => {
     setIsRedirecting(true);
 
     let step = 0;
@@ -141,7 +141,7 @@ const Deadlock = () => {
       step++;
       if (step >= redirectMessages.length) {
         clearInterval(redirectInterval);
-        navigate("/deadlock/lobby");
+        navigate(targetPath);
       } else {
         setRedirectStep(step);
       }
@@ -154,7 +154,18 @@ const Deadlock = () => {
       showNotification(`WELCOME BACK, ${existingTeamData.name}`, "success");
       localStorage.setItem("teamId", existingTeamData._id);
       localStorage.setItem("teamName", existingTeamData.name);
-      setTimeout(initRedirect, 1000);
+
+      // Proactive redirection based on current round
+      let targetPath = "/deadlock/lobby";
+
+      if (existingTeamData.currentRound === 'crack-the-code' || existingTeamData.currentRound === 'eliminated') {
+        targetPath = "/crackTheCode";
+      } else if (existingTeamData.currentRound === 'deadlock') {
+        // Still go to lobby first to find the match, or could check for active match here
+        targetPath = "/deadlock/lobby";
+      }
+
+      setTimeout(() => initRedirect(targetPath), 1000);
       return;
     }
 
@@ -172,7 +183,7 @@ const Deadlock = () => {
     };
 
     try {
-      const response = await axios.post(`http://${window.location.hostname}:5000/api/admin/deadlock/team`, teamData);
+      const response = await axios.post(`/api/admin/deadlock/team`, teamData);
 
       if (response.data.success) {
         showNotification("DEPLOYMENT SUCCESSFUL.", "success");

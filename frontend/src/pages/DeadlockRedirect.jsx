@@ -12,7 +12,7 @@ const DeadlockRedirect = () => {
 
                 // 1. Valid context with matchId Logic
                 if (context.matchId) {
-                    navigate(`/deadlock/${context.matchId}`, { replace: true });
+                    navigate(`/deadlock/game`, { replace: true });
                     return;
                 }
             }

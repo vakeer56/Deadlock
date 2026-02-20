@@ -210,7 +210,7 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
                 )}
                 {glitchStatus?.active && (
                     <div style={{ color: 'red', fontWeight: 'bold', animation: 'blink 0.5s infinite' }}>
-                        SYSTEM UNDER ATTACK 
+                        SYSTEM UNDER ATTACK
                     </div>
                 )}
 
@@ -233,8 +233,8 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
 // --- Main Component ---
 
 import useSecurity from '../hooks/useSecurity';
-
 import GlitchOverlay from '../components/crack/GlitchOverlay';
+import DismissalOverlay from '../components/crack/DismissalOverlay';
 
 const CrackTheCode = () => {
     const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
@@ -257,6 +257,9 @@ const CrackTheCode = () => {
     const [hiddenTestResult, setHiddenTestResult] = useState(null);
     const [lastValidatedCode, setLastValidatedCode] = useState("");
 
+    // DISMISSAL STATE
+    const [isDismissed, setIsDismissed] = useState(false);
+
     // GLITCH STATE
     const [glitchStatus, setGlitchStatus] = useState({
         active: false,
@@ -268,6 +271,22 @@ const CrackTheCode = () => {
     useEffect(() => {
         const fetchGlitchStatus = async () => {
             try {
+                // 1. Check Global Status for Dismissal
+                const globalRes = await fetch('/api/public/crack-code/global-status');
+                if (globalRes.ok) {
+                    const globalData = await globalRes.json();
+                    // If game was started but now global session is gone -> ADMIN DISMISSED
+                    if (isGameStarted && !globalData.started && !submissionResult) {
+                        setIsDismissed(true);
+                        // Transition back after 5 seconds
+                        setTimeout(() => {
+                            window.location.reload(); // Simple way to reset state and return to lobby
+                        }, 5000);
+                        return; // Stop polling glitch if dismissed
+                    }
+                }
+
+                // 2. Check Glitch Status
                 const res = await fetch('/api/public/glitch/status');
                 if (res.ok) {
                     const data = await res.json();
@@ -279,14 +298,14 @@ const CrackTheCode = () => {
                     });
                 }
             } catch (err) {
-                console.error("Glitch poll error:", err);
+                console.error("Poll error:", err);
             }
         };
 
         fetchGlitchStatus(); // Initial check
         const interval = setInterval(fetchGlitchStatus, 2000);
         return () => clearInterval(interval);
-    }, []);
+    }, [isGameStarted, submissionResult]);
 
     const handleActivateGlitch = async () => {
         const teamId = localStorage.getItem("teamId");
@@ -721,10 +740,12 @@ ${otherCode}
 
     return (
         <div className="crack-page">
-            {isVictim && (
+            {isDismissed && <DismissalOverlay />}
+
+            {isVictim && !isDismissed && (
                 <GlitchOverlay
                     ownerName={glitchStatus?.ownerId ? "RIVAL TEAM" : "UNKNOWN"}
-                    expiresAt={null} // Timer handled inside overlay or just visual
+                    remaining={glitchStatus?.remainingTime}
                 />
             )}
 

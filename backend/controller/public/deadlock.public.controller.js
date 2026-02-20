@@ -209,12 +209,12 @@ exports.submitDeadlock = async (req, res) => {
                 });
 
                 // ATOMIC FIRST BLOOD ASSIGNMENT
-                // Only assign if firstBloodTeamId is null.
+                // Ensure state exists, then assign if firstBloodTeamId is null.
                 const GameState = require("../../model/gameState.model");
+                await GameState.get();
                 await GameState.updateOne(
                     { key: 'GLOBAL_STATE', firstBloodTeamId: null },
-                    { $set: { firstBloodTeamId: winnerId } },
-                    { upsert: true } // Create if doesn't exist
+                    { $set: { firstBloodTeamId: winnerId } }
                 );
             }
 

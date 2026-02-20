@@ -89,58 +89,126 @@ const useSecurity = (teamName) => {
         }
     }, [teamName]);
 
-    // 🚨 SMALL TOP-RIGHT TOAST UI 🚨
+    // 🚨 HIGH-IMPACT CYBER ALERT UI 🚨
     const showSecurityAlert = useCallback((message) => {
-        const id = 'security-toast-' + Math.random().toString(36).substr(2, 9);
-        const toast = document.createElement('div');
-        toast.id = id;
-        toast.innerHTML = `
-            <div style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.3); margin-bottom: 5px; padding-bottom: 3px;">
-                SECURITY ALERT
+        const id = 'security-alert-' + Math.random().toString(36).substr(2, 9);
+        const container = document.createElement('div');
+        container.id = id;
+
+        container.innerHTML = `
+            <div class="cyber-alert-frame">
+                <div class="alert-glitch-overlay"></div>
+                <div class="alert-scanner"></div>
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-body">
+                    <div class="alert-title">SECURITY_VIOLATION_DETECTED</div>
+                    <div class="alert-msg">${message.toUpperCase()}</div>
+                </div>
+                <div class="alert-status-bar">
+                    <span>STATUS: REPORTED_TO_CORE</span>
+                    <span class="alert-timer">00:${Math.floor(Math.random() * 90 + 10)}</span>
+                </div>
             </div>
-            <div style="font-size: 13px;">${message.toUpperCase()}</div>
         `;
 
-        toast.style.cssText = `
+        container.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(180, 0, 0, 0.9);
-            color: white;
-            padding: 12px 20px;
-            z-index: 100000;
-            border-left: 4px solid #ffcc00;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            text-align: left;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            top: 30px;
+            right: 30px;
+            z-index: 2147483647;
             pointer-events: none;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 4px;
-            animation: toastSlideIn 0.3s ease-out;
-            min-width: 200px;
+            animation: alertSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
         `;
 
-        if (!document.getElementById('security-toast-animation')) {
+        if (!document.getElementById('cyber-alert-styles')) {
             const style = document.createElement('style');
-            style.id = 'security-toast-animation';
+            style.id = 'cyber-alert-styles';
             style.innerHTML = `
-                @keyframes toastSlideIn {
-                    from { transform: translateX(110%); }
-                    to { transform: translateX(0); }
+                @keyframes alertSlideIn {
+                    from { transform: translateX(120%) skewX(-10deg); opacity: 0; }
+                    to { transform: translateX(0) skewX(0); opacity: 1; }
+                }
+                @keyframes alertGlow {
+                    0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 60, 0.4), inset 0 0 10px rgba(255, 0, 60, 0.2); }
+                    50% { box-shadow: 0 0 40px rgba(255, 0, 60, 0.6), inset 0 0 20px rgba(255, 0, 60, 0.4); }
+                }
+                @keyframes alertScan {
+                    0% { top: -100%; }
+                    100% { top: 200%; }
+                }
+                .cyber-alert-frame {
+                    background: rgba(10, 0, 0, 0.95);
+                    border: 1px solid #ff003c;
+                    padding: 15px 25px;
+                    min-width: 320px;
+                    position: relative;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                    animation: alertGlow 2s infinite;
+                    backdrop-filter: blur(10px);
+                }
+                .cyber-alert-frame::before {
+                    content: '';
+                    position: absolute;
+                    left: 0; top: 0; bottom: 0;
+                    width: 4px;
+                    background: #ff003c;
+                }
+                .alert-scanner {
+                    position: absolute;
+                    left: 0; right: 0;
+                    height: 2px;
+                    background: rgba(255, 0, 60, 0.5);
+                    box-shadow: 0 0 15px #ff003c;
+                    animation: alertScan 3s linear infinite;
+                    z-index: 2;
+                }
+                .alert-icon {
+                    font-size: 24px;
+                    filter: drop-shadow(0 0 5px #ff003c);
+                }
+                .alert-title {
+                    color: #ff003c;
+                    font-weight: 900;
+                    font-size: 12px;
+                    letter-spacing: 2px;
+                    margin-bottom: 4px;
+                }
+                .alert-msg {
+                    color: #fff;
+                    font-size: 16px;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                }
+                .alert-status-bar {
+                    position: absolute;
+                    bottom: 0; left: 4px; right: 0;
+                    background: rgba(255, 0, 60, 0.1);
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 2px 10px;
+                    font-size: 9px;
+                    color: rgba(255, 255, 255, 0.5);
+                    letter-spacing: 1px;
                 }
             `;
             document.head.appendChild(style);
         }
 
-        document.body.appendChild(toast);
+        document.body.appendChild(container);
+
+        // Auto-remove
         setTimeout(() => {
-            if (toast.parentNode) {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.5s ease-out';
-                setTimeout(() => toast.remove(), 500);
+            if (container.parentNode) {
+                container.style.transition = 'all 0.5s ease-in';
+                container.style.transform = 'translateX(120%)';
+                container.style.opacity = '0';
+                setTimeout(() => container.remove(), 500);
             }
-        }, 10000); // 10 seconds
+        }, 8000);
     }, []);
 
     useEffect(() => {

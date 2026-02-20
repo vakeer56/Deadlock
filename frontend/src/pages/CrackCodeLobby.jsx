@@ -24,19 +24,28 @@ const CrackCodeLobby = ({ onGameReady }) => {
                 }
 
                 // 2. Fetch Team Status
+                let currentTeamStatus = teamStatus;
                 const teamRes = await fetch(`/api/public/crack-code/team-status/${teamId}`);
                 if (teamRes.ok) {
                     const data = await teamRes.json();
+                    currentTeamStatus = data;
                     setTeamStatus(data);
                 }
 
                 // 3. Check Session Eligibility and Transition
-                const sessionRes = await fetch(`/api/public/crack-code/session/${teamId}`);
-                if (sessionRes.ok) {
-                    const data = await sessionRes.json();
-                    onGameReady(data);
-                } else if (sessionRes.status === 403 || sessionRes.status === 404) {
-                    // This team is not starting yet (or never will)
+                // Only winners should have a session. Losers/Eliminated teams should not call this.
+                const isEligible = currentTeamStatus?.deadlockResult === 'win' || currentTeamStatus?.deadlockResult === 'winner';
+
+                if (isEligible) {
+                    const sessionRes = await fetch(`/api/public/crack-code/session/${teamId}`);
+                    if (sessionRes.ok) {
+                        const data = await sessionRes.json();
+                        onGameReady(data);
+                    } else if (sessionRes.status === 403 || sessionRes.status === 404) {
+                        setGameStatusLoading(false);
+                    }
+                } else if (currentTeamStatus && currentTeamStatus.deadlockResult !== 'pending') {
+                    // Team is either 'lose' or 'eliminated'
                     setGameStatusLoading(false);
                 }
             } catch (error) {
