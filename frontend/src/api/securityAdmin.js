@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `http://${window.location.hostname}:5000/api/admin/deadlock`;
+const API_URL = '/api/admin/deadlock';
 
 const api = axios.create({
     baseURL: API_URL,

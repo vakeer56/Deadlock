@@ -388,7 +388,7 @@ ${otherCode}
             files[0].name = "Main.java";
         }
 
-        const response = await fetch(`http://${window.location.hostname}:5000/api/public/code/execute`, {
+        const response = await fetch('/api/public/code/execute', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -495,7 +495,7 @@ ${otherCode}
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/submit`, {
+            const response = await fetch('/api/public/crack-code/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -658,6 +658,7 @@ ${otherCode}
                     handleSubmit={handleSubmit}
                     handleCodeChange={handleCodeChange}
                     handleEditorDidMount={handleEditorDidMount}
+                    security={security}
                 />
             </div>
         </div>
@@ -732,7 +733,8 @@ const LeftPanel = React.memo(({ activeTestCase, setActiveTestCase, testResults, 
 const RightPanel = React.memo(({
     language, code, isRunning, isSubmitting, isSubmitEnabled,
     activeTestCase, testResults, handleLanguageChange, handleRun,
-    handleSubmit, handleCodeChange, handleEditorDidMount
+    handleSubmit, handleCodeChange, handleEditorDidMount,
+    security
 }) => {
     // Local state for debounced editor updates
     const [localCode, setLocalCode] = useState(code);

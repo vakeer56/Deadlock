@@ -35,8 +35,7 @@ const useSecurity = (teamName) => {
         const pollInterval = setInterval(fetchSettings, 10000);
 
         // Socket setup
-        const hostname = window.location.hostname || 'localhost';
-        const socketHost = `http://${hostname}:5000`;
+        const socketHost = '/';
         console.log(">>> [SECURITY_HOOK] Connecting to socket at:", socketHost);
 
         socketRef.current = io(socketHost, {
