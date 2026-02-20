@@ -205,12 +205,12 @@ const GameHeader = React.memo(({ initialTime, isGameStarted, submissionResult, o
                             animation: 'pulse 1s infinite'
                         }}
                     >
-                        ⚡ INITIATE CYBER-ATTACK
+                        Unleash First Blood Skill 🩸
                     </button>
                 )}
                 {glitchStatus?.active && (
                     <div style={{ color: 'red', fontWeight: 'bold', animation: 'blink 0.5s infinite' }}>
-                        ⚠️ SYSTEM UNDER ATTACK ⚠️
+                        SYSTEM UNDER ATTACK 
                     </div>
                 )}
 
