@@ -248,9 +248,9 @@ const Deadlock = () => {
           <img src={logo} alt="Logo" className="brand-logo" />
           <span className="brand-text">TAKSHASHILA</span>
         </div>
-        <div className="brand-right">
+        {/* <div className="brand-right">
           <span className="brand-text">Celestius</span>
-        </div>
+        </div> */}
       </div>
 
       {/* Main Content with 3D Reveal */}
