@@ -481,6 +481,21 @@ exports.startAllDeadlockMatches = async (req, res) => {
             });
         }
 
+        // --- ATOMIC GLOBAL STATE RESET ---
+        // Every time we start a new round of matches, reset First Blood and glitch ability
+        await GameState.updateOne(
+            { key: 'GLOBAL_STATE' },
+            {
+                $set: {
+                    firstBloodTeamId: null,
+                    glitchUsed: false,
+                    glitchActiveUntil: null
+                }
+            },
+            { upsert: true }
+        );
+        // ---------------------------------
+
         const matches = [];
 
         // Pair teams & create matches
