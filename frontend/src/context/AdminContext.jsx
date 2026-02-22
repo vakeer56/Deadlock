@@ -25,13 +25,11 @@ export const AdminProvider = ({ children }) => {
         });
 
         socketRef.current.on('connect', () => {
-            console.log(">>> [ADMIN_CONTEXT] Socket connected ID:", socketRef.current.id);
             setConnected(true);
             socketRef.current.emit('join-admin');
         });
 
         socketRef.current.on('new-log', (log) => {
-            console.log(">>> [ADMIN_CONTEXT] Received new log:", log);
             setLogs(prev => [log, ...prev].slice(0, 100)); // Keep last 100 logs
         });
 
@@ -41,13 +39,11 @@ export const AdminProvider = ({ children }) => {
         });
 
         socketRef.current.on('disconnect', () => {
-            console.log(">>> [ADMIN_CONTEXT] Socket disconnected");
             setConnected(false);
         });
 
         return () => {
             if (socketRef.current) {
-                console.log(">>> [ADMIN_CONTEXT] Cleaning up socket connection");
                 socketRef.current.disconnect();
             }
         };

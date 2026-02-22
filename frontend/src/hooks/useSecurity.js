@@ -9,15 +9,12 @@ const useSecurity = (teamName) => {
     const socketRef = useRef();
 
     useEffect(() => {
-        console.log(">>> [SECURITY_HOOK] Initializing for team:", teamName);
-
         const fetchSettings = async () => {
             try {
                 const res = await getSecuritySettings();
                 if (res.success) {
                     setSecurity(prev => {
                         if (JSON.stringify(prev) !== JSON.stringify(res.settings)) {
-                            console.log(">>> [SECURITY_HOOK] Policy Synchronized via Polling/Broadcast");
                             return res.settings;
                         }
                         return prev;
@@ -36,7 +33,6 @@ const useSecurity = (teamName) => {
 
         // Socket setup
         const socketHost = '/';
-        console.log(">>> [SECURITY_HOOK] Connecting to socket at:", socketHost);
 
         socketRef.current = io(socketHost, {
             reconnection: true,
@@ -48,12 +44,10 @@ const useSecurity = (teamName) => {
 
 
         socketRef.current.on('connect', () => {
-            console.log(">>> [SECURITY_HOOK] Connected to server. ID:", socketRef.current.id);
             socketRef.current.emit('join-team', teamName);
         });
 
         socketRef.current.on('security-settings-updated', (newSettings) => {
-            console.log(">>> [SECURITY_HOOK] Received security update:", newSettings);
             setSecurity(newSettings);
             // Visual feedback for admin testing
             const toast = document.createElement('div');
@@ -70,7 +64,6 @@ const useSecurity = (teamName) => {
         return () => {
             clearInterval(pollInterval);
             if (socketRef.current) {
-                console.log(">>> [SECURITY_HOOK] Disconnecting socket");
                 socketRef.current.disconnect();
             }
         };

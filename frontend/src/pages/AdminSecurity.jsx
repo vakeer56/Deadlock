@@ -12,7 +12,6 @@ const AdminSecurity = () => {
     });
 
     useEffect(() => {
-        console.log(">>> [ADMIN_SECURITY] Mounting Dashboard");
         // Fetch initial settings
         const fetchSettings = async () => {
             try {

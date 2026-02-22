@@ -45,7 +45,7 @@ function App() {
         <Route path="/login" element={<Deadlock />} />
         <Route path="/crackTheCode" element={<CrackTheCode />} />
         <Route path="/deadlock/game" element={<DeadlockPage />} />
-        <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => console.log('Match data:', data)} />} />
+        <Route path="/deadlock/lobby" element={<DeadlockLobby onMatchFound={(data) => { }} />} />
         <Route path="/deadlock" element={<DeadlockRedirect />} />
 
         {/* Guardrail: Redirect any other /deadlock/* paths to Home */}

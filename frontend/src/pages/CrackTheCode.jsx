@@ -29,7 +29,6 @@ public:
 };`,
     javascript: `// Write your JavaScript code here
 function decodeLogic(nums, target) {
-    console.log("Processing...");
     return [0, 1];
 }`,
     java: `// Write your Java code here
