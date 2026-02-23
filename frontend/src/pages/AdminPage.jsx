@@ -137,6 +137,39 @@ const AdminPage = () => {
         setSourceColumn(null);
     };
 
+    const handleRandomMatch = () => {
+        // Collect all teams from all columns
+        const allTeams = [...unassignedTeams, ...teamA, ...teamB];
+
+        if (allTeams.length < 2) {
+            showToast("Not enough teams to match");
+            return;
+        }
+
+        // Fisher-Yates shuffle
+        const shuffled = [...allTeams];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        // Calculate distribution
+        const total = shuffled.length;
+        const isOdd = total % 2 !== 0;
+        const pairsCount = Math.floor(total / 2);
+
+        const newUnassigned = isOdd ? [shuffled[0]] : [];
+        const startIdx = isOdd ? 1 : 0;
+
+        const newTeamA = shuffled.slice(startIdx, startIdx + pairsCount);
+        const newTeamB = shuffled.slice(startIdx + pairsCount);
+
+        setUnassignedTeams(newUnassigned);
+        setTeamA(newTeamA);
+        setTeamB(newTeamB);
+
+        showToast("Teams randomized and distributed.");
+    };
 
     const handleSwap = async () => {
         const temp = teamA;
@@ -262,6 +295,13 @@ const AdminPage = () => {
                         >
                             <span className="btn-glitch"></span>
                             INITIALIZE ALL MATCHES
+                        </button>
+                        <button
+                            onClick={handleRandomMatch}
+                            className="cyber-btn secondary"
+                            disabled={loading || (unassignedTeams.length + teamA.length + teamB.length) < 2}
+                        >
+                            GROUP RANDOM MATCHES
                         </button>
                         <button
                             onClick={handleSwap}

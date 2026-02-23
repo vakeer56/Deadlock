@@ -41,6 +41,10 @@ const Deadlock = () => {
     "WELCOME, OPERATIVE."
   ];
 
+  // Deployment State
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
+
   // Notification State
   const [notification, setNotification] = useState(null);
 
@@ -149,8 +153,11 @@ const Deadlock = () => {
   };
 
   const handleSubmit = async () => {
+    if (isDeploying || isResuming) return;
+
     // RESUME MISSION FLOW
     if (teamExists && existingTeamData) {
+      setIsResuming(true);
       showNotification(`WELCOME BACK, ${existingTeamData.name}`, "success");
       localStorage.setItem("teamId", existingTeamData._id);
       localStorage.setItem("teamName", existingTeamData.name);
@@ -175,6 +182,8 @@ const Deadlock = () => {
       return;
     }
 
+    if (isDeploying) return;
+    setIsDeploying(true);
 
     // NEW DEPLOYMENT
     const teamData = {
@@ -193,6 +202,7 @@ const Deadlock = () => {
       }
     } catch (error) {
       console.error("Error deploying team:", error);
+      setIsDeploying(false);
       if (error.response) {
         showNotification(error.response.data.message || "DEPLOYMENT FAILED", "error");
       } else if (error.request) {
@@ -303,8 +313,12 @@ const Deadlock = () => {
           </div>
         </div>
 
-        <button className={`deploy-btn ${teamExists ? "resume-mode" : ""}`} onClick={handleSubmit}>
-          {teamExists ? "RESUME MISSION" : "INITIALIZE DEPLOYMENT"}
+        <button
+          className={`deploy-btn ${teamExists ? "resume-mode" : ""} ${(isDeploying || isResuming) ? "deploying" : ""}`}
+          onClick={handleSubmit}
+          disabled={isDeploying || isResuming}
+        >
+          {teamExists ? (isResuming ? "SESSION RESUMING..." : "RESUME MISSION") : (isDeploying ? "DEPLOYING..." : "INITIALIZE DEPLOYMENT")}
         </button>
       </div>
     </div>
