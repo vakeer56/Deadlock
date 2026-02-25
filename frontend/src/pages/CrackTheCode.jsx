@@ -15,8 +15,7 @@ const LANGUAGE_VERSIONS = {
 const DEFAULT_CODE = {
     python: `# Write your Python code here
 def decodeLogic(nums, target):
-    print("Processing...")
-    return [0, 1]`,
+    #Implement your logic here`,
     cpp: `// Write your C++ code here
 #include <iostream>
 #include <vector>
@@ -25,21 +24,19 @@ using namespace std;
 class Solution {
 public:
     vector<int> decodeLogic(vector<int>& nums, int target) {
-        cout << "Processing..." << endl;
-        return {0, 1};
+        //Implement your logic here
     }
 };`,
     javascript: `// Write your JavaScript code here
 function decodeLogic(nums, target) {
-    return [0, 1];
+    //Implement your logic here
 }`,
     java: `// Write your Java code here
 import java.util.*;
 
 class Solution {
     public int[] decodeLogic(int[] nums, int target) {
-        System.out.println("Processing...");
-        return new int[]{0, 1};
+        //Implement your logic here
     }
 }`
 };
