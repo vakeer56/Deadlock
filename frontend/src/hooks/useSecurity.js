@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { getSecuritySettings } from '../api/securityAdmin';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+
 const useSecurity = (teamName) => {
     const [security, setSecurity] = useState({
         disableCopyPaste: false
@@ -32,7 +34,7 @@ const useSecurity = (teamName) => {
         const pollInterval = setInterval(fetchSettings, 10000);
 
         // Socket setup
-        const socketHost = '/';
+        const socketHost = BASE_URL;
 
         socketRef.current = io(socketHost, {
             reconnection: true,
