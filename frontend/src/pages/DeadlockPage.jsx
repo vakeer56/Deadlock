@@ -11,6 +11,8 @@ import WinnerBackground from '../components/deadlock/WinnerBackground';
 import LoserBackground from '../components/deadlock/LoserBackground';
 import '../components/deadlock/deadlock.css';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+
 import useSecurity from '../hooks/useSecurity';
 
 const DeadlockPage = () => {
@@ -64,7 +66,7 @@ const DeadlockPage = () => {
         if (isFetching.current || isSubmittingRef.current) return;
         isFetching.current = true;
         try {
-            const res = await axios.get(`/api/public/deadlock/match/${matchId}`);
+            const res = await axios.get(`${BASE_URL}/api/public/deadlock/match/${matchId}`);
             const data = res.data;
 
             // Detect if question advanced (opponent solved it)
@@ -147,7 +149,7 @@ const DeadlockPage = () => {
                 code: codes[language]
             };
 
-            const res = await axios.post('/api/public/deadlock/submit', payload);
+            const res = await axios.post(`${BASE_URL}/api/public/deadlock/submit`, payload);
 
             if (res.status === 200) {
                 const data = res.data;

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = '/api/admin/deadlock';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+const API_URL = `${BASE_URL}/api/admin/deadlock`;
 
 const api = axios.create({
     baseURL: API_URL,

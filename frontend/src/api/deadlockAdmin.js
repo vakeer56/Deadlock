@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Use environment variable if set, otherwise fallback to dynamic hostname for LAN support
-const API_URL = `http://${window.location.hostname}:5000/api/admin/deadlock`;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+const API_URL = `${BASE_URL}/api/admin/deadlock`;
 
 const api = axios.create({
     baseURL: API_URL,

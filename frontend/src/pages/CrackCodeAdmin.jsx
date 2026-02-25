@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './CrackCodeAdmin.css';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
 const CrackCodeAdmin = () => {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(null);
@@ -13,18 +14,18 @@ const CrackCodeAdmin = () => {
         const fetchStatus = async () => {
             try {
                 // Check eligible teams
-                const eligibleRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/eligible-teams`);
+                const eligibleRes = await fetch(`${BASE_URL}/api/public/crack-code/eligible-teams`);
                 const eligibleData = await eligibleRes.json();
                 setEligibleCount(eligibleData.count || 0);
 
                 // Check global session status
-                const statusRes = await fetch(`http://${window.location.hostname}:5000/api/public/crack-code/global-status`);
+                const statusRes = await fetch(`${BASE_URL}/api/public/crack-code/global-status`);
                 const statusData = await statusRes.json();
                 setIsSessionActive(statusData.started);
 
                 // Fetch winner info if session is active
                 if (statusData.started) {
-                    const winnerRes = await fetch(`http://${window.location.hostname}:5000/api/admin/crack-code/winner-info`);
+                    const winnerRes = await fetch(`${BASE_URL}/api/admin/crack-code/winner-info`);
                     const winnerData = await winnerRes.json();
                     if (winnerData.winnerFound) {
                         setWinnerInfo(winnerData);
@@ -48,7 +49,7 @@ const CrackCodeAdmin = () => {
         setStatus({ type: 'info', message: 'INJECTING SESSION DATA...' });
 
         try {
-            const response = await fetch(`http://${window.location.hostname}:5000/api/admin/crack-code/start`, {
+            const response = await fetch(`${BASE_URL}/api/admin/crack-code/start`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -77,7 +78,7 @@ const CrackCodeAdmin = () => {
         setStatus({ type: 'info', message: 'PURGING SESSION DATA...' });
 
         try {
-            const response = await fetch(`http://${window.location.hostname}:5000/api/admin/crack-code/reset`, {
+            const response = await fetch(`${BASE_URL}/api/admin/crack-code/reset`, {
                 method: 'DELETE'
             });
 

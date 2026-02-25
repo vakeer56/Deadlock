@@ -17,8 +17,7 @@ export const AdminProvider = ({ children }) => {
     const socketRef = useRef();
 
     useEffect(() => {
-        const hostname = window.location.hostname || 'localhost';
-        const socketHost = `http://${hostname}:5000`;
+        const socketHost = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
 
         socketRef.current = io(socketHost, {
             transports: ['websocket', 'polling']

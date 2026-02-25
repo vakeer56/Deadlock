@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import useSecurity from '../hooks/useSecurity';
 import './DeadlockLobby.css';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+
 const DeadlockLobby = ({ onMatchFound }) => {
     const teamName = localStorage.getItem('teamName') || 'UNKNOWN';
     const { security } = useSecurity(teamName);
@@ -23,7 +25,7 @@ const DeadlockLobby = ({ onMatchFound }) => {
         const pollDeadlockStatus = async () => {
             try {
                 // 1. Check Team Status (with cache busting)
-                const teamRes = await fetch(`/api/public/crack-code/team-status/${teamId}?cb=${Date.now()}`);
+                const teamRes = await fetch(`${BASE_URL}/api/public/crack-code/team-status/${teamId}?cb=${Date.now()}`);
                 if (teamRes.ok) {
                     const data = await teamRes.json();
                     setTeamStatus(data);
@@ -35,7 +37,7 @@ const DeadlockLobby = ({ onMatchFound }) => {
                 }
 
                 // 2. Check Match Assignment
-                const matchRes = await fetch(`/api/public/deadlock/match/team/${teamId}?cb=${Date.now()}`);
+                const matchRes = await fetch(`${BASE_URL}/api/public/deadlock/match/team/${teamId}?cb=${Date.now()}`);
                 if (matchRes.ok) {
                     const data = await matchRes.json();
 

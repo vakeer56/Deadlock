@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './CrackCodeLobby.css';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+
 const CrackCodeLobby = ({ onGameReady }) => {
     const [gameStatusLoading, setGameStatusLoading] = useState(true);
     const [teamStatus, setTeamStatus] = useState(null);
@@ -17,7 +19,7 @@ const CrackCodeLobby = ({ onGameReady }) => {
         const pollEverything = async () => {
             try {
                 // 1. Fetch Global Status
-                const globalRes = await fetch('/api/public/crack-code/global-status');
+                const globalRes = await fetch(`${BASE_URL}/api/public/crack-code/global-status`);
                 if (globalRes.ok) {
                     const data = await globalRes.json();
                     setGlobalStarted(data.started);
@@ -25,7 +27,7 @@ const CrackCodeLobby = ({ onGameReady }) => {
 
                 // 2. Fetch Team Status
                 let currentTeamStatus = teamStatus;
-                const teamRes = await fetch(`/api/public/crack-code/team-status/${teamId}`);
+                const teamRes = await fetch(`${BASE_URL}/api/public/crack-code/team-status/${teamId}`);
                 if (teamRes.ok) {
                     const data = await teamRes.json();
                     currentTeamStatus = data;
@@ -37,7 +39,7 @@ const CrackCodeLobby = ({ onGameReady }) => {
                 const isEligible = currentTeamStatus?.deadlockResult === 'win' || currentTeamStatus?.deadlockResult === 'winner';
 
                 if (isEligible) {
-                    const sessionRes = await fetch(`/api/public/crack-code/session/${teamId}`);
+                    const sessionRes = await fetch(`${BASE_URL}/api/public/crack-code/session/${teamId}`);
                     if (sessionRes.ok) {
                         const data = await sessionRes.json();
                         onGameReady(data);

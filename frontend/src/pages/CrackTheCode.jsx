@@ -3,6 +3,8 @@ import Editor from '@monaco-editor/react';
 import CrackCodeLobby from './CrackCodeLobby';
 import './CrackTheCode.css';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+
 const LANGUAGE_VERSIONS = {
     python: "3.10.0",
     cpp: "10.2.0",
@@ -271,7 +273,7 @@ const CrackTheCode = () => {
         const fetchGlitchStatus = async () => {
             try {
                 // 1. Check Global Status for Dismissal
-                const globalRes = await fetch('/api/public/crack-code/global-status');
+                const globalRes = await fetch(`${BASE_URL}/api/public/crack-code/global-status`);
                 if (globalRes.ok) {
                     const globalData = await globalRes.json();
                     // If game was started but now global session is gone -> ADMIN DISMISSED
@@ -286,7 +288,7 @@ const CrackTheCode = () => {
                 }
 
                 // 2. Check Glitch Status
-                const res = await fetch('/api/public/glitch/status');
+                const res = await fetch(`${BASE_URL}/api/public/glitch/status`);
                 if (res.ok) {
                     const data = await res.json();
                     setGlitchStatus({
@@ -313,7 +315,7 @@ const CrackTheCode = () => {
         if (!window.confirm("WARNING: INITIATING CYBER-ATTACK WILL DISRUPT ALL OPPONENTS FOR 15 SECONDS. EXECUTE?")) return;
 
         try {
-            const res = await fetch('/api/public/glitch/activate', {
+            const res = await fetch(`${BASE_URL}/api/public/glitch/activate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ teamId })
@@ -494,7 +496,7 @@ ${otherCode}
             files[0].name = "Main.java";
         }
 
-        const response = await fetch('/api/public/code/execute', {
+        const response = await fetch(`${BASE_URL}/api/public/code/execute`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -601,7 +603,7 @@ ${otherCode}
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/public/crack-code/submit', {
+            const response = await fetch(`${BASE_URL}/api/public/crack-code/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
