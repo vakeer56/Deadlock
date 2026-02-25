@@ -91,6 +91,10 @@ if (process.env.NODE_ENV !== "production") {
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
+app.get("/health", (req, res) => {
+  res.status(200).send("Server is running");
+});
+
 mongoose
   .connect(MONGO_URI)
   .then(() => {
