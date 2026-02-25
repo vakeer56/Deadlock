@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require('path');
+require("dotenv").config({ path: path.resolve(__dirname, '.env') });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -99,6 +100,7 @@ mongoose
   .connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
+    console.log("Connected to Database:", mongoose.connection.name);
 
     server.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);

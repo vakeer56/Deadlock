@@ -1,6 +1,7 @@
+const path = require('path');
 const mongoose = require('mongoose');
 const DeadlockQuestion = require('../model/deadlockQuestion');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const getTpl = (fn, pyP, cppP, jvP) => ({
     python: `class Solution:\n    def ${fn}(self, ${pyP}):\n        # Write solution here\n        `,

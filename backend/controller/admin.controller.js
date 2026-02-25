@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const DeadlockMatch = require("../model/deadlock.model");
 const Team = require("../model/team.model");
 const DeadlockQuestion = require("../model/deadlockQuestion");
@@ -474,10 +475,14 @@ exports.startAllDeadlockMatches = async (req, res) => {
 
         // Get all available questions from the pool
         const allQuestions = await DeadlockQuestion.find({});
+        console.log(`[INIT] Found ${allQuestions.length} total questions.`);
+
         if (allQuestions.length < 30) {
+            console.error(`[INIT] Threshold failure: ${allQuestions.length} < 30`);
             return res.status(500).json({
                 success: false,
-                message: "Not enough questions in the database pool (need at least 30)."
+                message: "Not enough questions in the database pool (need at least 30).",
+                error: `Database has only ${allQuestions.length} questions. Ensure the seeder was run correctly.`
             });
         }
 
@@ -524,6 +529,12 @@ exports.startAllDeadlockMatches = async (req, res) => {
             // The dynamic difficulty logic in solve endpoint will fetch the next medium/hard 
             // questions based on tugPosition.
             const easyQuestions = allQuestions.filter(q => q.difficulty === "easy");
+
+            if (easyQuestions.length === 0) {
+                console.error("CRITICAL: No easy questions found in pool!");
+                throw new Error("Initialization failed: No easy questions available in the question pool.");
+            }
+
             const firstQuestion = easyQuestions[Math.floor(Math.random() * easyQuestions.length)];
 
             const match = await DeadlockMatch.create({

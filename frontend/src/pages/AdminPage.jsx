@@ -215,6 +215,7 @@ const AdminPage = () => {
 
     const handleStartAll = async () => {
         try {
+            setLoading(true);
             const teamAIds = teamA.map(t => t._id);
             const teamBIds = teamB.map(t => t._id);
 
@@ -225,7 +226,12 @@ const AdminPage = () => {
             setTeamB([]);
         } catch (err) {
             console.error(err);
-            showToast("Failed to start all matches");
+            const backendError = err.response?.data?.error;
+            const backendMessage = err.response?.data?.message;
+            const errorMsg = backendError ? `Error: ${backendError}` : (backendMessage || err.message || "Failed to start all matches");
+            showToast(errorMsg);
+        } finally {
+            setLoading(false);
         }
     };
 
