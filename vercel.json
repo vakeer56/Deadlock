@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "https://deadlock-kgoz.onrender.com/api/$1"
+        },
+        {
+            "source": "/socket.io/(.*)",
+            "destination": "https://deadlock-kgoz.onrender.com/socket.io/$1"
+        }
+    ]
+}
