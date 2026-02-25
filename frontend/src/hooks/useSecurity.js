@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { getSecuritySettings } from '../api/securityAdmin';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const useSecurity = (teamName) => {
     const [security, setSecurity] = useState({

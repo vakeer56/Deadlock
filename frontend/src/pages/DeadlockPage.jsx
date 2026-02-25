@@ -11,7 +11,7 @@ import WinnerBackground from '../components/deadlock/WinnerBackground';
 import LoserBackground from '../components/deadlock/LoserBackground';
 import '../components/deadlock/deadlock.css';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 import useSecurity from '../hooks/useSecurity';
 
