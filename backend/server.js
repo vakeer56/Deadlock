@@ -97,7 +97,7 @@ app.get("/health", (req, res) => {
 });
 
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI, { dbName: 'Deadlock' })
   .then(() => {
     console.log("MongoDB connected");
     console.log("Connected to Database:", mongoose.connection.name);

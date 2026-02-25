@@ -186,7 +186,7 @@ const HARD = [
 const seedDB = async () => {
     try {
         const uri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/deadlock";
-        await mongoose.connect(uri);
+        await mongoose.connect(uri, { dbName: 'Deadlock' });
         console.log("Connected to MongoDB:", uri);
         await DeadlockQuestion.deleteMany({});
         const all = [...EASY, ...MEDIUM, ...HARD];

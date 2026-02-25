@@ -5,7 +5,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const verify = async () => {
     try {
         const uri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/deadlock";
-        await mongoose.connect(uri);
+        await mongoose.connect(uri, { dbName: 'Deadlock' });
         const db = mongoose.connection.db;
         const collection = db.collection('deadlockquestions');
 
