@@ -42,10 +42,10 @@ class Solution {
 };
 
 const TEST_CASES = [
-    { input: "nums = [2,7,11,15], target = 9", output: "[1,2]", args: [[2,7,11,15], 9] },
-    { input: "nums = [2,3,4], target = 6", output: "[1,3]", args: [[2,3,4], 6] },
-    { input: "nums = [-1,0], target = -1", output: "[1,2]", args: [[-1,0], -1] },
-    { input: "nums = [-10, -3, 0, 4, 9, 15, 21], target = 6", output: "[2,5]", args: [[-10, -3, 0, 4, 9, 15, 21], 6], hidden: true }
+    { input: "nums = [1,2,2]", output: "[[], [1], [1,2], [1,2,2], [2], [2,2]]", args: [[1,2,2]] },
+    { input: "nums = [0]", output: "[[], [0]]", args: [[0]] },
+    { input: "nums = [2,2,2]", output: "[ [],[2], [2,2],[2,2,2]]", args: [[-1,0], -1], hidden: true },
+    { input: "nums = [4,4,4,1,4]", output: "[[],[1],[1,4],[1,4,4],[1,4,4,4],[1,4,4,4,4],[4],[4,4],[4,4,4],[4,4,4,4]]", args: [[4,4,4,1,4]] }
 ];
 
 // --- Memoized Cinematic Components (Defined at top to avoid TDZ) ---
