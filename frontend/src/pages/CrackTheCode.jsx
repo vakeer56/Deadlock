@@ -23,7 +23,7 @@ using namespace std;
 
 class Solution {
 public:
-    vector<int> decodeLogic(vector<vector<int>>& nums) {
+    vector<vector<int>> decodeLogic(vector<int>& nums) {
         //Implement your logic here
     }
 };`,
@@ -35,7 +35,7 @@ function decodeLogic(nums) {
 import java.util.*;
 
 class Solution {
-    public int[] decodeLogic(int[] nums) {
+    public int[][] decodeLogic(int[] nums) {
         //Implement your logic here
     }
 }`
