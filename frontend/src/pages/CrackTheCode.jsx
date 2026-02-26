@@ -23,7 +23,7 @@ using namespace std;
 
 class Solution {
 public:
-    vector<int> decodeLogic(vector<int>& nums) {
+    vector<int> decodeLogic(vector<vector<int>>& nums) {
         //Implement your logic here
     }
 };`,
@@ -68,7 +68,7 @@ const HexagonGrid = React.memo(({ isFirst }) => {
                     width: h.width,
                     animationDelay: h.delay,
                     animationDuration: h.duration,
-                    fill: 'none',
+                    fill: 'none',LISTENING FOR ACTIVITY...
                     stroke: isFirst ? '#00ff41' : '#ff9d00',
                     strokeWidth: '1'
                 }}>
