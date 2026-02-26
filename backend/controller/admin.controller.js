@@ -12,7 +12,7 @@ exports.createMatch = async (req, res) => {
     try {
         const match = await DeadlockMatch.create({
             tugPosition: 0,
-            maxPull: 4,
+            maxPull: 3,
             status: "lobby"
         });
 
@@ -543,7 +543,7 @@ exports.startAllDeadlockMatches = async (req, res) => {
                 questions: [firstQuestion._id],
                 currentQuestionIndex: 0,
                 tugPosition: 0,
-                maxPull: 4,
+                maxPull: 3,
                 status: "ongoing"
             });
 
