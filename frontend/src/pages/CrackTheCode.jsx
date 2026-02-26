@@ -14,7 +14,7 @@ const LANGUAGE_VERSIONS = {
 
 const DEFAULT_CODE = {
     python: `# Write your Python code here
-def decodeLogic(nums, target):
+def decodeLogic(nums):
     #Implement your logic here`,
     cpp: `// Write your C++ code here
 #include <iostream>
@@ -23,19 +23,19 @@ using namespace std;
 
 class Solution {
 public:
-    vector<int> decodeLogic(vector<int>& nums, int target) {
+    vector<int> decodeLogic(vector<int>& nums) {
         //Implement your logic here
     }
 };`,
     javascript: `// Write your JavaScript code here
-function decodeLogic(nums, target) {
+function decodeLogic(nums) {
     //Implement your logic here
 }`,
     java: `// Write your Java code here
 import java.util.*;
 
 class Solution {
-    public int[] decodeLogic(int[] nums, int target) {
+    public int[] decodeLogic(int[] nums) {
         //Implement your logic here
     }
 }`
@@ -44,7 +44,7 @@ class Solution {
 const TEST_CASES = [
     { input: "nums = [1,2,2]", output: "[[], [1], [1,2], [1,2,2], [2], [2,2]]", args: [[1,2,2]] },
     { input: "nums = [0]", output: "[[], [0]]", args: [[0]] },
-    { input: "nums = [2,2,2]", output: "[ [],[2], [2,2],[2,2,2]]", args: [[-1,0], -1], hidden: true },
+    { input: "nums = [2,2,2]", output: "[ [],[2], [2,2],[2,2,2]]", args: [[2,2,2]], hidden: true },
     { input: "nums = [4,4,4,1,4]", output: "[[],[1],[1,4],[1,4,4],[1,4,4,4],[1,4,4,4,4],[4],[4,4],[4,4,4],[4,4,4,4]]", args: [[4,4,4,1,4]] }
 ];
 
