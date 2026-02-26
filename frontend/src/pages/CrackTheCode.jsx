@@ -68,7 +68,7 @@ const HexagonGrid = React.memo(({ isFirst }) => {
                     width: h.width,
                     animationDelay: h.delay,
                     animationDuration: h.duration,
-                    fill: 'none',LISTENING FOR ACTIVITY...
+                    fill: 'none',
                     stroke: isFirst ? '#00ff41' : '#ff9d00',
                     strokeWidth: '1'
                 }}>
