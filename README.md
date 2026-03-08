@@ -129,4 +129,3 @@ Frontend:
 ![WhatsApp Image 2026-03-07 at 10 48 09 PM(2)](https://github.com/user-attachments/assets/d3b62d94-f7fe-4953-b8df-f25f748e422d)
 ![WhatsApp Image 2026-03-07 at 10 48 09 PM(1)](https://github.com/user-attachments/assets/3a62d70f-e6e6-46e2-8fca-b6b9bd3cee2c)
 ![WhatsApp Image 2026-03-07 at 10 48 09 PM](https://github.com/user-attachments/assets/309bda13-651f-4b6c-a032-87249fd47622)
-<img width="300" height="168" alt="arch" src="https://github.com/user-attachments/assets/0f1cae59-16e8-4b0e-bc37-d5d9476f87a9" />
