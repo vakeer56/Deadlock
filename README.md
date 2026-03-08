@@ -119,3 +119,14 @@ Backend:
 Frontend:
 - `npm start` – start development server
 - `npm run build` – build production version
+## Images
+
+![WhatsApp Image 2026-03-07 at 10 48 10 PM(4)](https://github.com/user-attachments/assets/dd5a09a1-7fd4-4ad6-aec2-a4260b3e47a9)
+![WhatsApp Image 2026-03-07 at 10 48 10 PM(3)](https://github.com/user-attachments/assets/0377f2b1-4b1d-4a70-9536-89abb1f9d3aa)
+![WhatsApp Image 2026-03-07 at 10 48 10 PM(2)](https://github.com/user-attachments/assets/a4b53652-8fa5-4017-b7da-2d6c81a9d6b6)
+![WhatsApp Image 2026-03-07 at 10 48 10 PM(1)](https://github.com/user-attachments/assets/8c21e7e4-3b01-46e1-be24-2e48891beb33)
+![WhatsApp Image 2026-03-07 at 10 48 10 PM](https://github.com/user-attachments/assets/a07f9aab-61c4-4ccb-8a9a-f36144f80b4d)
+![WhatsApp Image 2026-03-07 at 10 48 09 PM(2)](https://github.com/user-attachments/assets/d3b62d94-f7fe-4953-b8df-f25f748e422d)
+![WhatsApp Image 2026-03-07 at 10 48 09 PM(1)](https://github.com/user-attachments/assets/3a62d70f-e6e6-46e2-8fca-b6b9bd3cee2c)
+![WhatsApp Image 2026-03-07 at 10 48 09 PM](https://github.com/user-attachments/assets/309bda13-651f-4b6c-a032-87249fd47622)
+<img width="300" height="168" alt="arch" src="https://github.com/user-attachments/assets/0f1cae59-16e8-4b0e-bc37-d5d9476f87a9" />
